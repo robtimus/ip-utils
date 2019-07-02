@@ -48,7 +48,7 @@ public abstract class IPRangeSpliterator<IP extends IPAddress<IP>> implements Sp
     public boolean tryAdvance(Consumer<? super IP> action) {
         if (current != null && current.compareTo(to) <= 0) {
             action.accept(current);
-            current = current.hasNext() ? (IP) current.next() : null;
+            current = current.hasNext() ? current.next() : null;
             return true;
         }
         return false;

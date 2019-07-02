@@ -552,7 +552,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
             boolean added = false;
 
             added = appendChar(octet / 100, dest, added);
-            added = appendChar((octet % 100) / 10, dest, added);
+            appendChar((octet % 100) / 10, dest, added);
             appendChar(octet % 10, dest, true);
         }
 
@@ -1389,7 +1389,6 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
                     for (int i = 1; i < formatEnd; i++) {
                         dest.append(':');
                         appendMediumHextet(hextet(highAddress, lowAddress, i), upperCase, dest);
-                        endsWithColon = false;
                     }
                 } else {
                     int zeroesSectionStart = (longestZeroesSection >> 8) & 0xFF;
@@ -1401,7 +1400,6 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
                         endsWithColon = true;
                         if (zeroesSectionEnd == formatEnd) {
                             dest.append(':');
-                            endsWithColon = true;
                         } else {
                             for (int i = zeroesSectionEnd; i < formatEnd; i++) {
                                 dest.append(':');
@@ -1529,7 +1527,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
 
             added = appendChar((hextet >> 12) & 0xF, upperCase, dest, added);
             added = appendChar((hextet >> 8) & 0xF, upperCase, dest, added);
-            added = appendChar((hextet >> 4) & 0xF, upperCase, dest, added);
+            appendChar((hextet >> 4) & 0xF, upperCase, dest, added);
             appendChar(hextet & 0xF, upperCase, dest, true);
         }
 

@@ -37,9 +37,9 @@ import java.util.function.Predicate;
  */
 public abstract class IPAddress<IP extends IPAddress<IP>> implements Comparable<IP> {
 
-    private transient String ipAddress;
+    private String ipAddress;
 
-    private transient InetAddress inetAddress;
+    private InetAddress inetAddress;
 
     IPAddress() {
         this(null);

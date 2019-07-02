@@ -35,7 +35,7 @@ final class Bytes {
     private static final long LOMASK = OMASK;
     // hextet constants
     // HSHIFT is shifting a single hextet
-    static final long HSHIFT = 2 * Byte.SIZE;
+    static final long HSHIFT = 2L * Byte.SIZE;
     // HSHIFTx means shift x hextets
     static final long HSHIFT0 = 0L * HSHIFT;
     static final long HSHIFT1 = 1L * HSHIFT;
