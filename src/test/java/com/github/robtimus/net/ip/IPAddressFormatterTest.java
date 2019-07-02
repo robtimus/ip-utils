@@ -20,6 +20,7 @@ package com.github.robtimus.net.ip;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
@@ -28,6 +29,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.util.Arrays;
@@ -377,6 +380,61 @@ public class IPAddressFormatterTest {
         private DynamicTest testFormatBytesOfInvalidLength(IPAddressFormatter<IPv4Address> formatter, int length) {
             return dynamicTest(String.format("invalid length: %d", length), () -> {
                 IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> formatter.format(new byte[length]));
+                assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
+            });
+        }
+
+        @TestFactory
+        public DynamicTest[] testAppendIPv4Address() {
+            IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
+            return new DynamicTest[] {
+                    dynamicTest("null",
+                            () -> assertThrows(NullPointerException.class, () -> formatter.append((IPv4Address) null, new StringWriter()))),
+                    testAppendIPv4Address(formatter, IPv4Address.LOCALHOST, "127.0.0.1"),
+                    testAppendIPv4Address(formatter, IPv4Address.MIN_VALUE, "0.0.0.0"),
+                    testAppendIPv4Address(formatter, IPv4Address.MAX_VALUE, "255.255.255.255"),
+                    testAppendIPv4Address(formatter, IPv4Address.valueOf(123, 234, 210, 109), "123.234.210.109"),
+                    testAppendIPv4Address(formatter, IPv4Address.valueOf(1, 2, 3, 4), "1.2.3.4"),
+            };
+        }
+
+        private DynamicTest testAppendIPv4Address(IPAddressFormatter<IPv4Address> formatter, IPv4Address address, String expected) {
+            return dynamicTest(address.toString(), () -> {
+                StringWriter dest = new StringWriter();
+                assertSame(dest, formatter.append(address, dest));
+                assertEquals(expected, dest.toString());
+            });
+        }
+
+        @TestFactory
+        public DynamicTest[] testAppendBytes() {
+            IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
+            return new DynamicTest[] {
+                    dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> formatter.append((byte[]) null, new StringWriter()))),
+                    testAppendBytes(formatter, new byte[] { 127, 0, 0, 1, }, "127.0.0.1"),
+                    testAppendBytes(formatter, new byte[] { 0, 0, 0, 0, }, "0.0.0.0"),
+                    testAppendBytes(formatter, new byte[] { (byte) 255, (byte) 255, (byte) 255, (byte) 255, }, "255.255.255.255"),
+                    testAppendBytes(formatter, new byte[] { 123, (byte) 234, (byte) 210, 109, }, "123.234.210.109"),
+                    testAppendBytes(formatter, new byte[] { 1, 2, 3, 4, }, "1.2.3.4"),
+                    testAppendBytesOfInvalidLength(formatter, 0),
+                    testAppendBytesOfInvalidLength(formatter, 3),
+                    testAppendBytesOfInvalidLength(formatter, 5),
+                    testAppendBytesOfInvalidLength(formatter, 16),
+            };
+        }
+
+        private DynamicTest testAppendBytes(IPAddressFormatter<IPv4Address> formatter, byte[] address, String expected) {
+            return dynamicTest(Arrays.toString(address), () -> {
+                StringWriter dest = new StringWriter();
+                assertSame(dest, formatter.append(address, dest));
+                assertEquals(expected, dest.toString());
+            });
+        }
+
+        private DynamicTest testAppendBytesOfInvalidLength(IPAddressFormatter<IPv4Address> formatter, int length) {
+            return dynamicTest(String.format("invalid length: %d", length), () -> {
+                IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                        () -> formatter.append(new byte[length], new StringWriter()));
                 assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
             });
         }
@@ -1080,6 +1138,283 @@ public class IPAddressFormatterTest {
                 exception = assertThrows(IllegalArgumentException.class, () -> formatter.format(new byte[length]));
                 assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
                 exception = assertThrows(IllegalArgumentException.class, () -> formatter.format(new byte[length], new StringBuilder()));
+                assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
+            });
+        }
+
+        @TestFactory
+        public DynamicContainer[] testAppendIPv4Address() {
+            return testAppend(Function.identity(), IPAddressFormatter::append);
+        }
+
+        @TestFactory
+        public DynamicContainer[] testAppendBytes() {
+            return testAppend(IPv6Address::toByteArray, IPAddressFormatter::append,
+                    formatter -> testAppendBytesOfInvalidLength(formatter, 0),
+                    formatter -> testAppendBytesOfInvalidLength(formatter, 4),
+                    formatter -> testAppendBytesOfInvalidLength(formatter, 15),
+                    formatter -> testAppendBytesOfInvalidLength(formatter, 17));
+        }
+
+        @SafeVarargs
+        private final <T> DynamicContainer[] testAppend(Function<IPv6Address, T> mapper,
+                Appender<IPv6Address, T> appender,
+                Function<IPAddressFormatter<IPv6Address>, DynamicTest>... additionalTests) {
+
+            return new DynamicContainer[] {
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withShortStyle()
+                            .toLowerCase()
+                            .withoutIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "::", "::1", "1::", "123:456:789:100:abcd:ef00:1000:1", "1200::1234:1:1", "1200::1234:0:0", "1200:0:0:1234:5678::",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withShortStyle()
+                            .toLowerCase()
+                            .withoutIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[::]", "[::1]", "[1::]", "[123:456:789:100:abcd:ef00:1000:1]", "[1200::1234:1:1]", "[1200::1234:0:0]",
+                            "[1200:0:0:1234:5678::]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withShortStyle()
+                            .toLowerCase()
+                            .withIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "::0.0.0.0", "::0.0.0.1", "1::0.0.0.0", "123:456:789:100:abcd:ef00:16.0.0.1", "1200::1234:0.1.0.1", "1200::1234:0.0.0.0",
+                            "1200::1234:5678:0:0.0.0.0",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withShortStyle()
+                            .toLowerCase()
+                            .withIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[::0.0.0.0]", "[::0.0.0.1]", "[1::0.0.0.0]", "[123:456:789:100:abcd:ef00:16.0.0.1]", "[1200::1234:0.1.0.1]",
+                            "[1200::1234:0.0.0.0]", "[1200::1234:5678:0:0.0.0.0]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withShortStyle()
+                            .toUpperCase()
+                            .withoutIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "::", "::1", "1::", "123:456:789:100:ABCD:EF00:1000:1", "1200::1234:1:1", "1200::1234:0:0", "1200:0:0:1234:5678::",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withShortStyle()
+                            .toUpperCase()
+                            .withoutIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[::]", "[::1]", "[1::]", "[123:456:789:100:ABCD:EF00:1000:1]", "[1200::1234:1:1]", "[1200::1234:0:0]",
+                            "[1200:0:0:1234:5678::]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withShortStyle()
+                            .toUpperCase()
+                            .withIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "::0.0.0.0", "::0.0.0.1", "1::0.0.0.0", "123:456:789:100:ABCD:EF00:16.0.0.1", "1200::1234:0.1.0.1", "1200::1234:0.0.0.0",
+                            "1200::1234:5678:0:0.0.0.0",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withShortStyle()
+                            .toUpperCase()
+                            .withIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[::0.0.0.0]", "[::0.0.0.1]", "[1::0.0.0.0]", "[123:456:789:100:ABCD:EF00:16.0.0.1]", "[1200::1234:0.1.0.1]",
+                            "[1200::1234:0.0.0.0]", "[1200::1234:5678:0:0.0.0.0]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withMediumStyle()
+                            .toLowerCase()
+                            .withoutIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "0:0:0:0:0:0:0:0", "0:0:0:0:0:0:0:1", "1:0:0:0:0:0:0:0", "123:456:789:100:abcd:ef00:1000:1", "1200:0:0:0:0:1234:1:1",
+                            "1200:0:0:0:0:1234:0:0", "1200:0:0:1234:5678:0:0:0",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withMediumStyle()
+                            .toLowerCase()
+                            .withoutIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[0:0:0:0:0:0:0:0]", "[0:0:0:0:0:0:0:1]", "[1:0:0:0:0:0:0:0]", "[123:456:789:100:abcd:ef00:1000:1]",
+                            "[1200:0:0:0:0:1234:1:1]", "[1200:0:0:0:0:1234:0:0]", "[1200:0:0:1234:5678:0:0:0]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withMediumStyle()
+                            .toLowerCase()
+                            .withIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "0:0:0:0:0:0:0.0.0.0", "0:0:0:0:0:0:0.0.0.1", "1:0:0:0:0:0:0.0.0.0", "123:456:789:100:abcd:ef00:16.0.0.1",
+                            "1200:0:0:0:0:1234:0.1.0.1", "1200:0:0:0:0:1234:0.0.0.0", "1200:0:0:1234:5678:0:0.0.0.0",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withMediumStyle()
+                            .toLowerCase()
+                            .withIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[0:0:0:0:0:0:0.0.0.0]", "[0:0:0:0:0:0:0.0.0.1]", "[1:0:0:0:0:0:0.0.0.0]", "[123:456:789:100:abcd:ef00:16.0.0.1]",
+                            "[1200:0:0:0:0:1234:0.1.0.1]", "[1200:0:0:0:0:1234:0.0.0.0]", "[1200:0:0:1234:5678:0:0.0.0.0]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withMediumStyle()
+                            .toUpperCase()
+                            .withoutIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "0:0:0:0:0:0:0:0", "0:0:0:0:0:0:0:1", "1:0:0:0:0:0:0:0", "123:456:789:100:ABCD:EF00:1000:1", "1200:0:0:0:0:1234:1:1",
+                            "1200:0:0:0:0:1234:0:0", "1200:0:0:1234:5678:0:0:0",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withMediumStyle()
+                            .toUpperCase()
+                            .withoutIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[0:0:0:0:0:0:0:0]", "[0:0:0:0:0:0:0:1]", "[1:0:0:0:0:0:0:0]", "[123:456:789:100:ABCD:EF00:1000:1]",
+                            "[1200:0:0:0:0:1234:1:1]", "[1200:0:0:0:0:1234:0:0]", "[1200:0:0:1234:5678:0:0:0]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withMediumStyle()
+                            .toUpperCase()
+                            .withIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "0:0:0:0:0:0:0.0.0.0", "0:0:0:0:0:0:0.0.0.1", "1:0:0:0:0:0:0.0.0.0", "123:456:789:100:ABCD:EF00:16.0.0.1",
+                            "1200:0:0:0:0:1234:0.1.0.1", "1200:0:0:0:0:1234:0.0.0.0", "1200:0:0:1234:5678:0:0.0.0.0",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withMediumStyle()
+                            .toUpperCase()
+                            .withIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[0:0:0:0:0:0:0.0.0.0]", "[0:0:0:0:0:0:0.0.0.1]", "[1:0:0:0:0:0:0.0.0.0]", "[123:456:789:100:ABCD:EF00:16.0.0.1]",
+                            "[1200:0:0:0:0:1234:0.1.0.1]", "[1200:0:0:0:0:1234:0.0.0.0]", "[1200:0:0:1234:5678:0:0.0.0.0]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withLongStyle()
+                            .toLowerCase()
+                            .withoutIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "0000:0000:0000:0000:0000:0000:0000:0000", "0000:0000:0000:0000:0000:0000:0000:0001",
+                            "0001:0000:0000:0000:0000:0000:0000:0000", "0123:0456:0789:0100:abcd:ef00:1000:0001",
+                            "1200:0000:0000:0000:0000:1234:0001:0001", "1200:0000:0000:0000:0000:1234:0000:0000",
+                            "1200:0000:0000:1234:5678:0000:0000:0000",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withLongStyle()
+                            .toLowerCase()
+                            .withoutIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[0000:0000:0000:0000:0000:0000:0000:0000]", "[0000:0000:0000:0000:0000:0000:0000:0001]",
+                            "[0001:0000:0000:0000:0000:0000:0000:0000]", "[0123:0456:0789:0100:abcd:ef00:1000:0001]",
+                            "[1200:0000:0000:0000:0000:1234:0001:0001]", "[1200:0000:0000:0000:0000:1234:0000:0000]",
+                            "[1200:0000:0000:1234:5678:0000:0000:0000]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withLongStyle()
+                            .toLowerCase()
+                            .withIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "0000:0000:0000:0000:0000:0000:0.0.0.0", "0000:0000:0000:0000:0000:0000:0.0.0.1",
+                            "0001:0000:0000:0000:0000:0000:0.0.0.0", "0123:0456:0789:0100:abcd:ef00:16.0.0.1",
+                            "1200:0000:0000:0000:0000:1234:0.1.0.1", "1200:0000:0000:0000:0000:1234:0.0.0.0",
+                            "1200:0000:0000:1234:5678:0000:0.0.0.0",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withLongStyle()
+                            .toLowerCase()
+                            .withIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[0000:0000:0000:0000:0000:0000:0.0.0.0]", "[0000:0000:0000:0000:0000:0000:0.0.0.1]",
+                            "[0001:0000:0000:0000:0000:0000:0.0.0.0]", "[0123:0456:0789:0100:abcd:ef00:16.0.0.1]",
+                            "[1200:0000:0000:0000:0000:1234:0.1.0.1]", "[1200:0000:0000:0000:0000:1234:0.0.0.0]",
+                            "[1200:0000:0000:1234:5678:0000:0.0.0.0]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withLongStyle()
+                            .toUpperCase()
+                            .withoutIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "0000:0000:0000:0000:0000:0000:0000:0000", "0000:0000:0000:0000:0000:0000:0000:0001",
+                            "0001:0000:0000:0000:0000:0000:0000:0000", "0123:0456:0789:0100:ABCD:EF00:1000:0001",
+                            "1200:0000:0000:0000:0000:1234:0001:0001", "1200:0000:0000:0000:0000:1234:0000:0000",
+                            "1200:0000:0000:1234:5678:0000:0000:0000",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withLongStyle()
+                            .toUpperCase()
+                            .withoutIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[0000:0000:0000:0000:0000:0000:0000:0000]", "[0000:0000:0000:0000:0000:0000:0000:0001]",
+                            "[0001:0000:0000:0000:0000:0000:0000:0000]", "[0123:0456:0789:0100:ABCD:EF00:1000:0001]",
+                            "[1200:0000:0000:0000:0000:1234:0001:0001]", "[1200:0000:0000:0000:0000:1234:0000:0000]",
+                            "[1200:0000:0000:1234:5678:0000:0000:0000]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withLongStyle()
+                            .toUpperCase()
+                            .withIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "0000:0000:0000:0000:0000:0000:0.0.0.0", "0000:0000:0000:0000:0000:0000:0.0.0.1",
+                            "0001:0000:0000:0000:0000:0000:0.0.0.0", "0123:0456:0789:0100:ABCD:EF00:16.0.0.1",
+                            "1200:0000:0000:0000:0000:1234:0.1.0.1", "1200:0000:0000:0000:0000:1234:0.0.0.0",
+                            "1200:0000:0000:1234:5678:0000:0.0.0.0",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.ipv6()
+                            .withLongStyle()
+                            .toUpperCase()
+                            .withIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[0000:0000:0000:0000:0000:0000:0.0.0.0]", "[0000:0000:0000:0000:0000:0000:0.0.0.1]",
+                            "[0001:0000:0000:0000:0000:0000:0.0.0.0]", "[0123:0456:0789:0100:ABCD:EF00:16.0.0.1]",
+                            "[1200:0000:0000:0000:0000:1234:0.1.0.1]", "[1200:0000:0000:0000:0000:1234:0.0.0.0]",
+                            "[1200:0000:0000:1234:5678:0000:0.0.0.0]",
+                            additionalTests),
+            };
+        }
+
+        @SafeVarargs
+        private final <T> DynamicContainer testAppend(Builder<IPv6Address> builder, Function<IPv6Address, T> mapper,
+                Appender<IPv6Address, T> appender, String expected1,
+                String expected2, String expected3, String expected4, String expected5, String expected6, String expected7,
+                Function<IPAddressFormatter<IPv6Address>, DynamicTest>... additionalTests) {
+
+            IPAddressFormatter<IPv6Address> formatter = builder.build();
+            DynamicTest[] tests = {
+                    dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> appender.append(formatter, null, new StringWriter()))),
+                    testAppend(formatter, mapper, appender, IPv6Address.valueOf(0L, 0L), expected1),
+                    testAppend(formatter, mapper, appender, IPv6Address.valueOf(0L, 1L), expected2),
+                    testAppend(formatter, mapper, appender, IPv6Address.valueOf(0x0001000000000000L, 0L), expected3),
+                    // no zeroes sections
+                    testAppend(formatter, mapper, appender, IPv6Address.valueOf(0x0123045607890100L, 0xABCDEF0010000001L), expected4),
+                    // one zeroes sections
+                    testAppend(formatter, mapper, appender, IPv6Address.valueOf(0x1200000000000000L, 0x0000123400010001L), expected5),
+                    // two zeroes sections, the first one being the longest
+                    testAppend(formatter, mapper, appender, IPv6Address.valueOf(0x1200000000000000L, 0x0000123400000000L), expected6),
+                    // two zeroes sections, the second one being the longest
+                    testAppend(formatter, mapper, appender, IPv6Address.valueOf(0x1200000000001234L, 0x5678000000000000L), expected7),
+            };
+            if (additionalTests.length > 0) {
+                tests = Stream.concat(
+                        Arrays.stream(tests),
+                        Arrays.stream(additionalTests).map(f -> f.apply(formatter))
+                ).toArray(DynamicTest[]::new);
+            }
+            return dynamicContainer(formatter.toString().replaceAll(".*\\[(.*)\\]", "$1"), Arrays.asList(tests));
+        }
+
+        private <T> DynamicTest testAppend(IPAddressFormatter<IPv6Address> formatter, Function<IPv6Address, T> mapper,
+                Appender<IPv6Address, T> appender, IPv6Address address, String expected) {
+
+            return dynamicTest(address.toString(), () -> {
+                StringWriter dest = new StringWriter();
+                assertSame(dest, appender.append(formatter, mapper.apply(address), dest));
+                assertEquals(expected, dest.toString());
+            });
+        }
+
+        private DynamicTest testAppendBytesOfInvalidLength(IPAddressFormatter<IPv6Address> formatter, int length) {
+            return dynamicTest(String.format("invalid length: %d", length), () -> {
+                IllegalArgumentException exception;
+                exception = assertThrows(IllegalArgumentException.class, () -> formatter.append(new byte[length], new StringWriter()));
                 assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
             });
         }
@@ -2868,6 +3203,294 @@ public class IPAddressFormatterTest {
             });
         }
 
+        @TestFactory
+        public DynamicContainer[] testAppendIPAddress() {
+            return testAppend(Function.identity(), IPAddressFormatter::append,
+                    formatter -> dynamicTest("unsupported IP address", () -> {
+                        IllegalStateException exception;
+                        exception = assertThrows(IllegalStateException.class, () -> formatter.append(new TestIPAddress(), new StringWriter()));
+                        assertEquals("unsupported IP addres type: " + TestIPAddress.class, exception.getMessage());
+                    }));
+        }
+
+        @TestFactory
+        public DynamicContainer[] testAppendBytes() {
+            return testAppend(IPAddress::toByteArray, IPAddressFormatter::append,
+                    formatter -> testAppendBytesOfInvalidLength(formatter, 0),
+                    formatter -> testAppendBytesOfInvalidLength(formatter, 15),
+                    formatter -> testAppendBytesOfInvalidLength(formatter, 17));
+        }
+
+        @SafeVarargs
+        private final <T> DynamicContainer[] testAppend(Function<IPAddress<?>, T> mapper,
+                Appender<IPAddress<?>, T> appender,
+                Function<IPAddressFormatter<IPAddress<?>>, DynamicTest>... additionalTests) {
+
+            return new DynamicContainer[] {
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withShortStyle()
+                            .toLowerCase()
+                            .withoutIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "::", "::1", "1::", "123:456:789:100:abcd:ef00:1000:1", "1200::1234:1:1", "1200::1234:0:0", "1200:0:0:1234:5678::",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withShortStyle()
+                            .toLowerCase()
+                            .withoutIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[::]", "[::1]", "[1::]", "[123:456:789:100:abcd:ef00:1000:1]", "[1200::1234:1:1]", "[1200::1234:0:0]",
+                            "[1200:0:0:1234:5678::]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withShortStyle()
+                            .toLowerCase()
+                            .withIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "::0.0.0.0", "::0.0.0.1", "1::0.0.0.0", "123:456:789:100:abcd:ef00:16.0.0.1", "1200::1234:0.1.0.1", "1200::1234:0.0.0.0",
+                            "1200::1234:5678:0:0.0.0.0",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withShortStyle()
+                            .toLowerCase()
+                            .withIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[::0.0.0.0]", "[::0.0.0.1]", "[1::0.0.0.0]", "[123:456:789:100:abcd:ef00:16.0.0.1]", "[1200::1234:0.1.0.1]",
+                            "[1200::1234:0.0.0.0]", "[1200::1234:5678:0:0.0.0.0]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withShortStyle()
+                            .toUpperCase()
+                            .withoutIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "::", "::1", "1::", "123:456:789:100:ABCD:EF00:1000:1", "1200::1234:1:1", "1200::1234:0:0", "1200:0:0:1234:5678::",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withShortStyle()
+                            .toUpperCase()
+                            .withoutIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[::]", "[::1]", "[1::]", "[123:456:789:100:ABCD:EF00:1000:1]", "[1200::1234:1:1]", "[1200::1234:0:0]",
+                            "[1200:0:0:1234:5678::]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withShortStyle()
+                            .toUpperCase()
+                            .withIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "::0.0.0.0", "::0.0.0.1", "1::0.0.0.0", "123:456:789:100:ABCD:EF00:16.0.0.1", "1200::1234:0.1.0.1", "1200::1234:0.0.0.0",
+                            "1200::1234:5678:0:0.0.0.0",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withShortStyle()
+                            .toUpperCase()
+                            .withIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[::0.0.0.0]", "[::0.0.0.1]", "[1::0.0.0.0]", "[123:456:789:100:ABCD:EF00:16.0.0.1]", "[1200::1234:0.1.0.1]",
+                            "[1200::1234:0.0.0.0]", "[1200::1234:5678:0:0.0.0.0]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withMediumStyle()
+                            .toLowerCase()
+                            .withoutIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "0:0:0:0:0:0:0:0", "0:0:0:0:0:0:0:1", "1:0:0:0:0:0:0:0", "123:456:789:100:abcd:ef00:1000:1", "1200:0:0:0:0:1234:1:1",
+                            "1200:0:0:0:0:1234:0:0", "1200:0:0:1234:5678:0:0:0",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withMediumStyle()
+                            .toLowerCase()
+                            .withoutIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[0:0:0:0:0:0:0:0]", "[0:0:0:0:0:0:0:1]", "[1:0:0:0:0:0:0:0]", "[123:456:789:100:abcd:ef00:1000:1]",
+                            "[1200:0:0:0:0:1234:1:1]", "[1200:0:0:0:0:1234:0:0]", "[1200:0:0:1234:5678:0:0:0]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withMediumStyle()
+                            .toLowerCase()
+                            .withIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "0:0:0:0:0:0:0.0.0.0", "0:0:0:0:0:0:0.0.0.1", "1:0:0:0:0:0:0.0.0.0", "123:456:789:100:abcd:ef00:16.0.0.1",
+                            "1200:0:0:0:0:1234:0.1.0.1", "1200:0:0:0:0:1234:0.0.0.0", "1200:0:0:1234:5678:0:0.0.0.0",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withMediumStyle()
+                            .toLowerCase()
+                            .withIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[0:0:0:0:0:0:0.0.0.0]", "[0:0:0:0:0:0:0.0.0.1]", "[1:0:0:0:0:0:0.0.0.0]", "[123:456:789:100:abcd:ef00:16.0.0.1]",
+                            "[1200:0:0:0:0:1234:0.1.0.1]", "[1200:0:0:0:0:1234:0.0.0.0]", "[1200:0:0:1234:5678:0:0.0.0.0]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withMediumStyle()
+                            .toUpperCase()
+                            .withoutIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "0:0:0:0:0:0:0:0", "0:0:0:0:0:0:0:1", "1:0:0:0:0:0:0:0", "123:456:789:100:ABCD:EF00:1000:1", "1200:0:0:0:0:1234:1:1",
+                            "1200:0:0:0:0:1234:0:0", "1200:0:0:1234:5678:0:0:0",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withMediumStyle()
+                            .toUpperCase()
+                            .withoutIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[0:0:0:0:0:0:0:0]", "[0:0:0:0:0:0:0:1]", "[1:0:0:0:0:0:0:0]", "[123:456:789:100:ABCD:EF00:1000:1]",
+                            "[1200:0:0:0:0:1234:1:1]", "[1200:0:0:0:0:1234:0:0]", "[1200:0:0:1234:5678:0:0:0]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withMediumStyle()
+                            .toUpperCase()
+                            .withIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "0:0:0:0:0:0:0.0.0.0", "0:0:0:0:0:0:0.0.0.1", "1:0:0:0:0:0:0.0.0.0", "123:456:789:100:ABCD:EF00:16.0.0.1",
+                            "1200:0:0:0:0:1234:0.1.0.1", "1200:0:0:0:0:1234:0.0.0.0", "1200:0:0:1234:5678:0:0.0.0.0",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withMediumStyle()
+                            .toUpperCase()
+                            .withIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[0:0:0:0:0:0:0.0.0.0]", "[0:0:0:0:0:0:0.0.0.1]", "[1:0:0:0:0:0:0.0.0.0]", "[123:456:789:100:ABCD:EF00:16.0.0.1]",
+                            "[1200:0:0:0:0:1234:0.1.0.1]", "[1200:0:0:0:0:1234:0.0.0.0]", "[1200:0:0:1234:5678:0:0.0.0.0]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withLongStyle()
+                            .toLowerCase()
+                            .withoutIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "0000:0000:0000:0000:0000:0000:0000:0000", "0000:0000:0000:0000:0000:0000:0000:0001",
+                            "0001:0000:0000:0000:0000:0000:0000:0000", "0123:0456:0789:0100:abcd:ef00:1000:0001",
+                            "1200:0000:0000:0000:0000:1234:0001:0001", "1200:0000:0000:0000:0000:1234:0000:0000",
+                            "1200:0000:0000:1234:5678:0000:0000:0000",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withLongStyle()
+                            .toLowerCase()
+                            .withoutIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[0000:0000:0000:0000:0000:0000:0000:0000]", "[0000:0000:0000:0000:0000:0000:0000:0001]",
+                            "[0001:0000:0000:0000:0000:0000:0000:0000]", "[0123:0456:0789:0100:abcd:ef00:1000:0001]",
+                            "[1200:0000:0000:0000:0000:1234:0001:0001]", "[1200:0000:0000:0000:0000:1234:0000:0000]",
+                            "[1200:0000:0000:1234:5678:0000:0000:0000]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withLongStyle()
+                            .toLowerCase()
+                            .withIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "0000:0000:0000:0000:0000:0000:0.0.0.0", "0000:0000:0000:0000:0000:0000:0.0.0.1",
+                            "0001:0000:0000:0000:0000:0000:0.0.0.0", "0123:0456:0789:0100:abcd:ef00:16.0.0.1",
+                            "1200:0000:0000:0000:0000:1234:0.1.0.1", "1200:0000:0000:0000:0000:1234:0.0.0.0",
+                            "1200:0000:0000:1234:5678:0000:0.0.0.0",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withLongStyle()
+                            .toLowerCase()
+                            .withIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[0000:0000:0000:0000:0000:0000:0.0.0.0]", "[0000:0000:0000:0000:0000:0000:0.0.0.1]",
+                            "[0001:0000:0000:0000:0000:0000:0.0.0.0]", "[0123:0456:0789:0100:abcd:ef00:16.0.0.1]",
+                            "[1200:0000:0000:0000:0000:1234:0.1.0.1]", "[1200:0000:0000:0000:0000:1234:0.0.0.0]",
+                            "[1200:0000:0000:1234:5678:0000:0.0.0.0]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withLongStyle()
+                            .toUpperCase()
+                            .withoutIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "0000:0000:0000:0000:0000:0000:0000:0000", "0000:0000:0000:0000:0000:0000:0000:0001",
+                            "0001:0000:0000:0000:0000:0000:0000:0000", "0123:0456:0789:0100:ABCD:EF00:1000:0001",
+                            "1200:0000:0000:0000:0000:1234:0001:0001", "1200:0000:0000:0000:0000:1234:0000:0000",
+                            "1200:0000:0000:1234:5678:0000:0000:0000",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withLongStyle()
+                            .toUpperCase()
+                            .withoutIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[0000:0000:0000:0000:0000:0000:0000:0000]", "[0000:0000:0000:0000:0000:0000:0000:0001]",
+                            "[0001:0000:0000:0000:0000:0000:0000:0000]", "[0123:0456:0789:0100:ABCD:EF00:1000:0001]",
+                            "[1200:0000:0000:0000:0000:1234:0001:0001]", "[1200:0000:0000:0000:0000:1234:0000:0000]",
+                            "[1200:0000:0000:1234:5678:0000:0000:0000]",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withLongStyle()
+                            .toUpperCase()
+                            .withIPv4End()
+                            .notEnclosingInBrackets(), mapper, appender,
+                            "0000:0000:0000:0000:0000:0000:0.0.0.0", "0000:0000:0000:0000:0000:0000:0.0.0.1",
+                            "0001:0000:0000:0000:0000:0000:0.0.0.0", "0123:0456:0789:0100:ABCD:EF00:16.0.0.1",
+                            "1200:0000:0000:0000:0000:1234:0.1.0.1", "1200:0000:0000:0000:0000:1234:0.0.0.0",
+                            "1200:0000:0000:1234:5678:0000:0.0.0.0",
+                            additionalTests),
+                    testAppend(IPAddressFormatter.anyVersion()
+                            .withLongStyle()
+                            .toUpperCase()
+                            .withIPv4End()
+                            .enclosingInBrackets(), mapper, appender,
+                            "[0000:0000:0000:0000:0000:0000:0.0.0.0]", "[0000:0000:0000:0000:0000:0000:0.0.0.1]",
+                            "[0001:0000:0000:0000:0000:0000:0.0.0.0]", "[0123:0456:0789:0100:ABCD:EF00:16.0.0.1]",
+                            "[1200:0000:0000:0000:0000:1234:0.1.0.1]", "[1200:0000:0000:0000:0000:1234:0.0.0.0]",
+                            "[1200:0000:0000:1234:5678:0000:0.0.0.0]",
+                            additionalTests),
+            };
+        }
+
+        @SafeVarargs
+        private final <T> DynamicContainer testAppend(Builder<IPAddress<?>> builder, Function<IPAddress<?>, T> mapper,
+                Appender<IPAddress<?>, T> appender, String expected1,
+                String expected2, String expected3, String expected4, String expected5, String expected6, String expected7,
+                Function<IPAddressFormatter<IPAddress<?>>, DynamicTest>... additionalTests) {
+
+            IPAddressFormatter<IPAddress<?>> formatter = builder.build();
+            DynamicTest[] tests = {
+                    dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> appender.append(formatter, null, new StringWriter()))),
+
+                    testAppend(formatter, mapper, appender, IPv4Address.LOCALHOST, "127.0.0.1"),
+                    testAppend(formatter, mapper, appender, IPv4Address.MIN_VALUE, "0.0.0.0"),
+                    testAppend(formatter, mapper, appender, IPv4Address.MAX_VALUE, "255.255.255.255"),
+                    testAppend(formatter, mapper, appender, IPv4Address.valueOf(123, 234, 210, 109), "123.234.210.109"),
+                    testAppend(formatter, mapper, appender, IPv4Address.valueOf(1, 2, 3, 4), "1.2.3.4"),
+
+                    testAppend(formatter, mapper, appender, IPv6Address.valueOf(0L, 0L), expected1),
+                    testAppend(formatter, mapper, appender, IPv6Address.valueOf(0L, 1L), expected2),
+                    testAppend(formatter, mapper, appender, IPv6Address.valueOf(0x0001000000000000L, 0L), expected3),
+                    // no zeroes sections
+                    testAppend(formatter, mapper, appender, IPv6Address.valueOf(0x0123045607890100L, 0xABCDEF0010000001L), expected4),
+                    // one zeroes sections
+                    testAppend(formatter, mapper, appender, IPv6Address.valueOf(0x1200000000000000L, 0x0000123400010001L), expected5),
+                    // two zeroes sections, the first one being the longest
+                    testAppend(formatter, mapper, appender, IPv6Address.valueOf(0x1200000000000000L, 0x0000123400000000L), expected6),
+                    // two zeroes sections, the second one being the longest
+                    testAppend(formatter, mapper, appender, IPv6Address.valueOf(0x1200000000001234L, 0x5678000000000000L), expected7),
+            };
+            if (additionalTests.length > 0) {
+                tests = Stream.concat(
+                        Arrays.stream(tests),
+                        Arrays.stream(additionalTests).map(f -> f.apply(formatter))
+                ).toArray(DynamicTest[]::new);
+            }
+            return dynamicContainer(formatter.toString().replaceAll(".*\\[(.*)\\]", "$1"), Arrays.asList(tests));
+        }
+
+        private <T> DynamicTest testAppend(IPAddressFormatter<IPAddress<?>> formatter, Function<IPAddress<?>, T> mapper,
+                Appender<IPAddress<?>, T> appender, IPAddress<?> address, String expected) {
+
+            return dynamicTest(address.toString(), () -> {
+                StringWriter dest = new StringWriter();
+                assertSame(dest, appender.append(formatter, mapper.apply(address), dest));
+                assertEquals(expected, dest.toString());
+            });
+        }
+
+        private DynamicTest testAppendBytesOfInvalidLength(IPAddressFormatter<IPAddress<?>> formatter, int length) {
+            return dynamicTest(String.format("invalid length: %d", length), () -> {
+                IllegalArgumentException exception;
+                exception = assertThrows(IllegalArgumentException.class, () -> formatter.append(new byte[length], new StringWriter()));
+                assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
+            });
+        }
+
         // valueOf is tested through IPAddressTest.testValueOfCharSequence
 
         @TestFactory
@@ -4499,6 +5122,11 @@ public class IPAddressFormatterTest {
     private interface StringBuilderFormatter<IP extends IPAddress<?>, T> {
 
         StringBuilder format(IPAddressFormatter<IP> formatter, T input, StringBuilder sb);
+    }
+
+    private interface Appender<IP extends IPAddress<?>, T> {
+
+        Appendable append(IPAddressFormatter<IP> formatter, T input, Appendable dest) throws IOException;
     }
 
     private static final class Formatters<IP extends IPAddress<?>, T> {

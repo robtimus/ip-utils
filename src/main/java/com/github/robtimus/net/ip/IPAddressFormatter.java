@@ -27,6 +27,8 @@ import static com.github.robtimus.net.ip.Bytes.OSHIFT2;
 import static com.github.robtimus.net.ip.Bytes.OSHIFT3;
 import static com.github.robtimus.net.ip.Bytes.addressToHighAddress;
 import static com.github.robtimus.net.ip.Bytes.addressToLowAddress;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.util.Arrays;
@@ -54,7 +56,14 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @return The given {@code StringBuilder}.
      * @throws NullPointerException If the given IP address or {@code StringBuilder} is {@code null}.
      */
-    public abstract StringBuilder format(IP address, StringBuilder sb);
+    public StringBuilder format(IP address, StringBuilder sb) {
+        try {
+            return append(address, sb);
+        } catch (IOException e) {
+            // will not occur because the StringBuilder will not throw any IOExceptions
+            throw new UncheckedIOException(e);
+        }
+    }
 
     /**
      * Formats an IP address.
@@ -66,6 +75,19 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
     public abstract String format(IP address);
 
     /**
+     * Appends an IP address to an {@code Appendable}.
+     *
+     * @param <A> The type of {@code Appendable}.
+     * @param address The IP address to append.
+     * @param dest The {@code Appendable} to append to.
+     * @return The given {@code Appendable}.
+     * @throws NullPointerException If the given IP address or {@code Appendable} is {@code null}.
+     * @throws IOException If an I/O error occurs while appending to the {@code Appendable}.
+     * @since 1.1
+     */
+    public abstract <A extends Appendable> A append(IP address, A dest) throws IOException;
+
+    /**
      * Formats an IP address, appending it to a {@code StringBuilder}.
      *
      * @param address A byte array representing the IP address to format.
@@ -74,7 +96,14 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @throws NullPointerException If the given array or {@code StringBuilder} is {@code null}.
      * @throws IllegalArgumentException If the length of the given array is invalid.
      */
-    public abstract StringBuilder format(byte[] address, StringBuilder sb);
+    public StringBuilder format(byte[] address, StringBuilder sb) {
+        try {
+            return append(address, sb);
+        } catch (IOException e) {
+            // will not occur because the StringBuilder will not throw any IOExceptions
+            throw new UncheckedIOException(e);
+        }
+    }
 
     /**
      * Formats an IP address.
@@ -85,6 +114,20 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @throws IllegalArgumentException If the length of the given array is invalid.
      */
     public abstract String format(byte[] address);
+
+    /**
+     * Appends an IP address to an {@code Appendable}.
+     *
+     * @param <A> The type of {@code Appendable}.
+     * @param address A byte array representing the IP address to format.
+     * @param dest The {@code Appendable} to append to.
+     * @return The given {@code Appendable}.
+     * @throws NullPointerException If the given array or {@code Appendable} is {@code null}.
+     * @throws IllegalArgumentException If the length of the given array is invalid.
+     * @throws IOException If an I/O error occurs while appending to the {@code Appendable}.
+     * @since 1.1
+     */
+    public abstract <A extends Appendable> A append(byte[] address, A dest) throws IOException;
 
     abstract IP valueOf(CharSequence address, int start, int end);
 
@@ -470,19 +513,19 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
-        public StringBuilder format(IPv4Address address, StringBuilder sb) {
-            format(address.address, sb);
-            return sb;
+        public <A extends Appendable> A append(IPv4Address address, A appendable) throws IOException {
+            append(address.address, appendable);
+            return appendable;
         }
 
-        void format(int address, StringBuilder sb) {
-            sb.append((address >> OSHIFT3) & OMASK);
-            sb.append('.');
-            sb.append((address >> OSHIFT2) & OMASK);
-            sb.append('.');
-            sb.append((address >> OSHIFT1) & OMASK);
-            sb.append('.');
-            sb.append((address >> OSHIFT0) & OMASK);
+        void append(int address, Appendable appendable) throws IOException {
+            appendOctet((address >> OSHIFT3) & OMASK, appendable);
+            appendable.append('.');
+            appendOctet((address >> OSHIFT2) & OMASK, appendable);
+            appendable.append('.');
+            appendOctet((address >> OSHIFT1) & OMASK, appendable);
+            appendable.append('.');
+            appendOctet((address >> OSHIFT0) & OMASK, appendable);
         }
 
         @Override
@@ -491,18 +534,35 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
-        public StringBuilder format(byte[] address, StringBuilder sb) {
+        public <A extends Appendable> A append(byte[] address, A appendable) throws IOException {
             if (address.length != IPv4Address.BYTES) {
                 throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize.get(address.length));
             }
-            sb.append(address[0] & OMASK);
-            sb.append('.');
-            sb.append(address[1] & OMASK);
-            sb.append('.');
-            sb.append(address[2] & OMASK);
-            sb.append('.');
-            sb.append(address[3] & OMASK);
-            return sb;
+            appendOctet(address[0] & OMASK, appendable);
+            appendable.append('.');
+            appendOctet(address[1] & OMASK, appendable);
+            appendable.append('.');
+            appendOctet(address[2] & OMASK, appendable);
+            appendable.append('.');
+            appendOctet(address[3] & OMASK, appendable);
+            return appendable;
+        }
+
+        void appendOctet(int octet, Appendable dest) throws IOException {
+            boolean added = false;
+
+            added = appendChar(octet / 100, dest, added);
+            added = appendChar((octet % 100) / 10, dest, added);
+            appendChar(octet % 10, dest, true);
+        }
+
+        private boolean appendChar(int i, Appendable dest, boolean addIfZero) throws IOException {
+            if (i != 0 || addIfZero) {
+                char c = Character.forDigit(i, 16);
+                dest.append(c);
+                return true;
+            }
+            return false;
         }
 
         @Override
@@ -708,9 +768,9 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
-        public StringBuilder format(IPv6Address address, StringBuilder sb) {
-            style.format(address, upperCase, withIPv4End, encloseInBrackets, sb);
-            return sb;
+        public <A extends Appendable> A append(IPv6Address address, A appendable) throws IOException {
+            style.append(address, upperCase, withIPv4End, encloseInBrackets, appendable);
+            return appendable;
         }
 
         @Override
@@ -719,12 +779,12 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
-        public StringBuilder format(byte[] address, StringBuilder sb) {
+        public <A extends Appendable> A append(byte[] address, A appendable) throws IOException {
             if (address.length != IPv6Address.BYTES) {
                 throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize.get(address.length));
             }
-            style.format(address, upperCase, withIPv4End, encloseInBrackets, sb);
-            return sb;
+            style.append(address, upperCase, withIPv4End, encloseInBrackets, appendable);
+            return appendable;
         }
 
         @Override
@@ -1172,18 +1232,6 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
-        public StringBuilder format(IPAddress<?> address, StringBuilder sb) {
-            if (address instanceof IPv4Address) {
-                return ipv4.format((IPv4Address) address, sb);
-            }
-            if (address instanceof IPv6Address) {
-                return ipv6.format((IPv6Address) address, sb);
-            }
-            Objects.requireNonNull(address);
-            throw new IllegalStateException("unsupported IP addres type: " + address.getClass()); //$NON-NLS-1$
-        }
-
-        @Override
         public String format(IPAddress<?> address) {
             if (address instanceof IPv4Address) {
                 return ipv4.format((IPv4Address) address);
@@ -1196,15 +1244,15 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
-        public StringBuilder format(byte[] address, StringBuilder sb) {
-            switch (address.length) {
-            case IPv4Address.BYTES:
-                return ipv4.format(address, sb);
-            case IPv6Address.BYTES:
-                return ipv6.format(address, sb);
-            default:
-                throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize.get(address.length));
+        public <A extends Appendable> A append(IPAddress<?> address, A appendable) throws IOException {
+            if (address instanceof IPv4Address) {
+                return ipv4.append((IPv4Address) address, appendable);
             }
+            if (address instanceof IPv6Address) {
+                return ipv6.append((IPv6Address) address, appendable);
+            }
+            Objects.requireNonNull(address);
+            throw new IllegalStateException("unsupported IP addres type: " + address.getClass()); //$NON-NLS-1$
         }
 
         @Override
@@ -1214,6 +1262,18 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
                 return ipv4.format(address);
             case IPv6Address.BYTES:
                 return ipv6.format(address);
+            default:
+                throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize.get(address.length));
+            }
+        }
+
+        @Override
+        public <A extends Appendable> A append(byte[] address, A appendable) throws IOException {
+            switch (address.length) {
+            case IPv4Address.BYTES:
+                return ipv4.append(address, appendable);
+            case IPv6Address.BYTES:
+                return ipv6.append(address, appendable);
             default:
                 throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize.get(address.length));
             }
@@ -1319,14 +1379,17 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
     private enum FormatStyle {
         SHORT {
             @Override
-            void format(long highAddress, long lowAddress, boolean upperCase, int formatEnd, StringBuilder sb) {
+            boolean append(long highAddress, long lowAddress, boolean upperCase, int formatEnd, Appendable dest) throws IOException {
+                boolean endsWithColon = false;
+
                 int longestZeroesSection = findLongestZeroesSection(highAddress, lowAddress, formatEnd);
                 if (longestZeroesSection == 0) {
                     // no consecutive sections of zeroes
-                    appendMediumHextet(hextet(highAddress, lowAddress, 0), upperCase, sb);
+                    appendMediumHextet(hextet(highAddress, lowAddress, 0), upperCase, dest);
                     for (int i = 1; i < formatEnd; i++) {
-                        sb.append(':');
-                        appendMediumHextet(hextet(highAddress, lowAddress, i), upperCase, sb);
+                        dest.append(':');
+                        appendMediumHextet(hextet(highAddress, lowAddress, i), upperCase, dest);
+                        endsWithColon = false;
                     }
                 } else {
                     int zeroesSectionStart = (longestZeroesSection >> 8) & 0xFF;
@@ -1334,31 +1397,38 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
 
                     if (zeroesSectionStart == 0) {
                         // either ::X or ::
-                        sb.append(':');
+                        dest.append(':');
+                        endsWithColon = true;
                         if (zeroesSectionEnd == formatEnd) {
-                            sb.append(':');
+                            dest.append(':');
+                            endsWithColon = true;
                         } else {
                             for (int i = zeroesSectionEnd; i < formatEnd; i++) {
-                                sb.append(':');
-                                appendMediumHextet(hextet(highAddress, lowAddress, i), upperCase, sb);
+                                dest.append(':');
+                                appendMediumHextet(hextet(highAddress, lowAddress, i), upperCase, dest);
+                                endsWithColon = false;
                             }
                         }
                     } else {
                         // either X:: or X::Y
                         for (int i = 0; i < zeroesSectionStart; i++) {
-                            appendMediumHextet(hextet(highAddress, lowAddress, i), upperCase, sb);
-                            sb.append(':');
+                            appendMediumHextet(hextet(highAddress, lowAddress, i), upperCase, dest);
+                            dest.append(':');
+                            endsWithColon = true;
                         }
                         if (zeroesSectionEnd == formatEnd) {
-                            sb.append(':');
+                            dest.append(':');
+                            endsWithColon = true;
                         } else {
                             for (int i = zeroesSectionEnd; i < formatEnd; i++) {
-                                sb.append(':');
-                                appendMediumHextet(hextet(highAddress, lowAddress, i), upperCase, sb);
+                                dest.append(':');
+                                appendMediumHextet(hextet(highAddress, lowAddress, i), upperCase, dest);
+                                endsWithColon = false;
                             }
                         }
                     }
                 }
+                return endsWithColon;
             }
 
             int findLongestZeroesSection(long highAddress, long lowAddress, int formatEnd) {
@@ -1389,59 +1459,63 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
 
         MEDIUM {
             @Override
-            void format(long highAddress, long lowAddress, boolean upperCase, int formatEnd, StringBuilder sb) {
-                appendMediumHextet(hextet(highAddress, lowAddress, 0), upperCase, sb);
+            boolean append(long highAddress, long lowAddress, boolean upperCase, int formatEnd, Appendable dest) throws IOException {
+                appendMediumHextet(hextet(highAddress, lowAddress, 0), upperCase, dest);
                 for (int i = 1; i < formatEnd; i++) {
-                    sb.append(':');
-                    appendMediumHextet(hextet(highAddress, lowAddress, i), upperCase, sb);
+                    dest.append(':');
+                    appendMediumHextet(hextet(highAddress, lowAddress, i), upperCase, dest);
                 }
+                return false;
             }
         },
 
         LONG {
             @Override
-            void format(long highAddress, long lowAddress, boolean upperCase, int formatEnd, StringBuilder sb) {
-                appendLongHextet(hextet(highAddress, lowAddress, 0), upperCase, sb);
+            boolean append(long highAddress, long lowAddress, boolean upperCase, int formatEnd, Appendable dest) throws IOException {
+                appendLongHextet(hextet(highAddress, lowAddress, 0), upperCase, dest);
                 for (int i = 1; i < formatEnd; i++) {
-                    sb.append(':');
-                    appendLongHextet(hextet(highAddress, lowAddress, i), upperCase, sb);
+                    dest.append(':');
+                    appendLongHextet(hextet(highAddress, lowAddress, i), upperCase, dest);
                 }
+                return false;
             }
         },
         ;
 
-        void format(IPv6Address address, boolean upperCase, boolean withIPv4End, boolean encloseInBrackets, StringBuilder sb) {
-            format(address.highAddress, address.lowAddress, upperCase, withIPv4End, encloseInBrackets, sb);
+        void append(IPv6Address address, boolean upperCase, boolean withIPv4End, boolean encloseInBrackets, Appendable dest) throws IOException {
+            append(address.highAddress, address.lowAddress, upperCase, withIPv4End, encloseInBrackets, dest);
         }
 
-        void format(byte[] address, boolean upperCase, boolean withIPv4End, boolean encloseInBrackets, StringBuilder sb) {
+        void append(byte[] address, boolean upperCase, boolean withIPv4End, boolean encloseInBrackets, Appendable dest) throws IOException {
             long highAddress = addressToHighAddress(address);
             long lowAddress = addressToLowAddress(address);
-            format(highAddress, lowAddress, upperCase, withIPv4End, encloseInBrackets, sb);
+            append(highAddress, lowAddress, upperCase, withIPv4End, encloseInBrackets, dest);
         }
 
-        private void format(long highAddress, long lowAddress, boolean upperCase, boolean withIPv4End, boolean encloseInBrackets, StringBuilder sb) {
+        private void append(long highAddress, long lowAddress, boolean upperCase, boolean withIPv4End, boolean encloseInBrackets, Appendable dest)
+                throws IOException {
+
             int formatEnd = IPv6Address.HEXTETS - (withIPv4End ? 2 : 0);
             if (encloseInBrackets) {
-                sb.append('[');
+                dest.append('[');
             }
-            format(highAddress, lowAddress, upperCase, formatEnd, sb);
+            boolean endsWithColon = append(highAddress, lowAddress, upperCase, formatEnd, dest);
             if (withIPv4End) {
-                appendIPv4(lowAddress, sb);
+                appendIPv4(lowAddress, dest, endsWithColon);
             }
             if (encloseInBrackets) {
-                sb.append(']');
+                dest.append(']');
             }
         }
 
-        abstract void format(long highAddress, long lowAddress, boolean upperCase, int formatEnd, StringBuilder sb);
+        abstract boolean append(long highAddress, long lowAddress, boolean upperCase, int formatEnd, Appendable dest) throws IOException;
 
-        private void appendIPv4(long lowAddress, StringBuilder sb) {
+        private void appendIPv4(long lowAddress, Appendable dest, boolean endsWithColon) throws IOException {
             // add a : if needed
-            if (sb.charAt(sb.length() - 1) != ':') {
-                sb.append(':');
+            if (!endsWithColon) {
+                dest.append(':');
             }
-            IPv4.INSTANCE.format((int) lowAddress, sb);
+            IPv4.INSTANCE.append((int) lowAddress, dest);
         }
 
         int hextet(long highAddress, long lowAddress, int index) {
@@ -1450,27 +1524,27 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
                     : (int) ((lowAddress >> ((7 - index) * HSHIFT)) & HMASK);
         }
 
-        void appendMediumHextet(int hextet, boolean upperCase, StringBuilder sb) {
+        void appendMediumHextet(int hextet, boolean upperCase, Appendable dest) throws IOException {
             boolean added = false;
 
-            added = appendChar((hextet >> 12) & 0xF, upperCase, sb, added);
-            added = appendChar((hextet >> 8) & 0xF, upperCase, sb, added);
-            added = appendChar((hextet >> 4) & 0xF, upperCase, sb, added);
-            appendChar(hextet & 0xF, upperCase, sb, true);
+            added = appendChar((hextet >> 12) & 0xF, upperCase, dest, added);
+            added = appendChar((hextet >> 8) & 0xF, upperCase, dest, added);
+            added = appendChar((hextet >> 4) & 0xF, upperCase, dest, added);
+            appendChar(hextet & 0xF, upperCase, dest, true);
         }
 
-        void appendLongHextet(int hextet, boolean upperCase, StringBuilder sb) {
-            appendChar((hextet >> 12) & 0xF, upperCase, sb, true);
-            appendChar((hextet >> 8) & 0xF, upperCase, sb, true);
-            appendChar((hextet >> 4) & 0xF, upperCase, sb, true);
-            appendChar(hextet & 0xF, upperCase, sb, true);
+        void appendLongHextet(int hextet, boolean upperCase, Appendable dest) throws IOException {
+            appendChar((hextet >> 12) & 0xF, upperCase, dest, true);
+            appendChar((hextet >> 8) & 0xF, upperCase, dest, true);
+            appendChar((hextet >> 4) & 0xF, upperCase, dest, true);
+            appendChar(hextet & 0xF, upperCase, dest, true);
         }
 
-        private boolean appendChar(int i, boolean upperCase, StringBuilder sb, boolean addIfZero) {
+        private boolean appendChar(int i, boolean upperCase, Appendable dest, boolean addIfZero) throws IOException {
             if (i != 0 || addIfZero) {
                 char c = Character.forDigit(i, 16);
                 c = upperCase ? Character.toUpperCase(c) : Character.toLowerCase(c);
-                sb.append(c);
+                dest.append(c);
                 return true;
             }
             return false;
