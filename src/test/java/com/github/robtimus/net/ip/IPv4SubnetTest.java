@@ -65,7 +65,10 @@ public class IPv4SubnetTest {
     @TestFactory
     public DynamicTest[] testValueOfCIDRNotation() {
         return new DynamicTest[] {
-                dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> IPv4Subnet.valueOf(null))),
+                dynamicTest("null", () -> {
+                    assertThrows(NullPointerException.class, () -> IPv4Subnet.valueOf(null));
+                    assertThrows(NullPointerException.class, () -> IPv4Subnet.valueOf(null, 0, 0));
+                }),
                 testValueOfCIDRNotationInvalidRoutingPrefix("127.0.0.1/0", "127.0.0.1", 0),
                 testValueOfCIDRNotation("127.0.0.1/32", 32, IPv4Address.LOCALHOST, IPv4Address.LOCALHOST),
                 testValueOfCIDRNotation("0.0.0.0/0", 0, IPv4Address.MIN_VALUE, IPv4Address.MAX_VALUE),
@@ -94,6 +97,17 @@ public class IPv4SubnetTest {
             assertEquals(expectedFrom, subnet.routingPrefix());
             assertEquals(expectedFrom, subnet.from());
             assertEquals(expectedTo, subnet.to());
+
+            subnet = IPv4Subnet.valueOf("1" + cidrNotation + "1", 1, 1 + cidrNotation.length());
+            assertEquals(expectedPrefixLength, subnet.prefixLength());
+            assertEquals(expectedFrom, subnet.routingPrefix());
+            assertEquals(expectedFrom, subnet.from());
+            assertEquals(expectedTo, subnet.to());
+
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.valueOf(cidrNotation, -1, cidrNotation.length()));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.valueOf(cidrNotation, 0, cidrNotation.length() + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.valueOf(cidrNotation, cidrNotation.length() + 1, cidrNotation.length()));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.valueOf(cidrNotation, 0, -1));
         });
     }
 
@@ -101,6 +115,11 @@ public class IPv4SubnetTest {
         return dynamicTest(cidrNotation.toString(), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv4Subnet.valueOf(cidrNotation));
             assertEquals(Messages.Subnet.invalidCIDRNotation.get(cidrNotation), exception.getMessage());
+
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.valueOf(cidrNotation, -1, cidrNotation.length()));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.valueOf(cidrNotation, 0, cidrNotation.length() + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.valueOf(cidrNotation, cidrNotation.length() + 1, cidrNotation.length()));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.valueOf(cidrNotation, 0, -1));
         });
     }
 
@@ -108,6 +127,11 @@ public class IPv4SubnetTest {
         return dynamicTest(cidrNotation.toString(), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv4Subnet.valueOf(cidrNotation));
             assertEquals(Messages.Subnet.invalidRoutingPrefix.get(routingPrefix, prefixLength), exception.getMessage());
+
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.valueOf(cidrNotation, -1, cidrNotation.length()));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.valueOf(cidrNotation, 0, cidrNotation.length() + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.valueOf(cidrNotation, cidrNotation.length() + 1, cidrNotation.length()));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.valueOf(cidrNotation, 0, -1));
         });
     }
 
@@ -121,7 +145,10 @@ public class IPv4SubnetTest {
     @TestFactory
     public DynamicTest[] testTryValueOfIPv4() {
         return new DynamicTest[] {
-                testTryValueOfIPv4(null, Optional.empty()),
+                dynamicTest("null", () -> {
+                    assertEquals(Optional.empty(), IPv4Subnet.tryValueOfIPv4(null));
+                    assertEquals(Optional.empty(), IPv4Subnet.tryValueOfIPv4(null, 0, 0));
+                }),
                 testTryValueOfIPv4("", Optional.empty()),
                 testTryValueOfIPv4("127.0.0.1/0", Optional.empty()),
                 testTryValueOfIPv4("127.0.0.1/32", Optional.of(IPv4Subnet.valueOf(IPv4Address.LOCALHOST, 32))),
@@ -144,7 +171,17 @@ public class IPv4SubnetTest {
 
     private DynamicTest testTryValueOfIPv4(String cidrNotation, Optional<IPv4Subnet> expected) {
         String displayName = String.valueOf(cidrNotation);
-        return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> assertEquals(expected, IPv4Subnet.tryValueOfIPv4(cidrNotation)));
+        return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> {
+            assertEquals(expected, IPv4Subnet.tryValueOfIPv4(cidrNotation));
+            assertEquals(expected, IPv4Subnet.tryValueOfIPv4("1" + cidrNotation + "1", 1, 1 + cidrNotation.length()));
+            assertEquals(expected, IPv4Subnet.tryValueOfIPv4("z" + cidrNotation + "z", 1, 1 + cidrNotation.length()));
+
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.tryValueOfIPv4(cidrNotation, -1, cidrNotation.length()));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.tryValueOfIPv4(cidrNotation, 0, cidrNotation.length() + 1));
+            assertThrows(IndexOutOfBoundsException.class,
+                    () -> IPv4Subnet.tryValueOfIPv4(cidrNotation, cidrNotation.length() + 1, cidrNotation.length()));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.tryValueOfIPv4(cidrNotation, 0, -1));
+        });
     }
 
     @TestFactory
@@ -245,7 +282,10 @@ public class IPv4SubnetTest {
     @TestFactory
     public DynamicTest[] testIsIPv4Subnet() {
         return new DynamicTest[] {
-                testIsIPv4Subnet(null, false),
+                dynamicTest("null", () -> {
+                    assertEquals(false, IPv4Subnet.isIPv4Subnet(null));
+                    assertEquals(false, IPv4Subnet.isIPv4Subnet(null, 0, 0));
+                }),
                 testIsIPv4Subnet("", false),
                 testIsIPv4Subnet("127.0.0.1/0", false),
                 testIsIPv4Subnet("127.0.0.1/32", true),
@@ -268,6 +308,15 @@ public class IPv4SubnetTest {
 
     private DynamicTest testIsIPv4Subnet(CharSequence s, boolean expected) {
         String displayName = String.valueOf(s);
-        return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> assertEquals(expected, IPv4Subnet.isIPv4Subnet(s)));
+        return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> {
+            assertEquals(expected, IPv4Subnet.isIPv4Subnet(s));
+            assertEquals(expected, IPv4Subnet.isIPv4Subnet("1" + s + "1", 1, 1 + s.length()));
+            assertEquals(expected, IPv4Subnet.isIPv4Subnet("z" + s + "z", 1, 1 + s.length()));
+
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.isIPv4Subnet(s, -1, s.length()));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.isIPv4Subnet(s, 0, s.length() + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.isIPv4Subnet(s, s.length() + 1, s.length()));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.isIPv4Subnet(s, 0, -1));
+        });
     }
 }

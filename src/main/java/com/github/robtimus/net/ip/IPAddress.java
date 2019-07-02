@@ -245,7 +245,24 @@ public abstract class IPAddress<IP extends IPAddress<IP>> implements Comparable<
      * @throws IllegalArgumentException If the given {@code CharSequence} does not represent a valid IP address.
      */
     public static IPAddress<?> valueOf(CharSequence address) {
-        return IPAddressFormatter.anyVersionWithDefaults().valueOf(address);
+        return valueOf(address, 0, address.length());
+    }
+
+    /**
+     * Returns an IP address represented by a portion of a {@code CharSequence}.
+     *
+     * @param address The IP address as a {@code CharSequence}.
+     * @param start The index in the {@code CharSequence} where the IP address starts, inclusive.
+     * @param end The index in the {@code CharSequence} where the IP address ends, exclusive.
+     * @return An IP address that represents the given address.
+     * @throws NullPointerException If the given {@code CharSequence} is {@code null}.
+     * @throws IndexOutOfBoundsException If the start index is negative, or if the end index is larger than the length of the {@code CharSequence},
+     *                                       or if the start index is larger than the end index.
+     * @throws IllegalArgumentException If the given {@code CharSequence} does not represent a valid IP address.
+     * @since 1.1
+     */
+    public static IPAddress<?> valueOf(CharSequence address, int start, int end) {
+        return IPAddressFormatter.anyVersionWithDefaults().valueOf(address, start, end);
     }
 
     /**
@@ -256,7 +273,23 @@ public abstract class IPAddress<IP extends IPAddress<IP>> implements Comparable<
      *         {@code CharSequence} is {@code null}or does not represent a valid IP address.
      */
     public static Optional<IPAddress<?>> tryValueOf(CharSequence address) {
-        return IPAddressFormatter.anyVersionWithDefaults().tryParse(address);
+        return address == null ? Optional.empty() : tryValueOf(address, 0, address.length());
+    }
+
+    /**
+     * Attempts to return an IP address represented by a portion of a {@code CharSequence}.
+     *
+     * @param address The possible IP address as a {@code CharSequence}.
+     * @param start The index in the {@code CharSequence} where the IP address starts, inclusive.
+     * @param end The index in the {@code CharSequence} where the IP address ends, exclusive.
+     * @return An {@link Optional} with the IP address that represents the given address, or {@link Optional#empty()} if the given
+     *         {@code CharSequence} is {@code null}or does not represent a valid IP address.
+     * @throws IndexOutOfBoundsException If the start index is negative, or if the end index is larger than the length of the {@code CharSequence},
+     *                                       or if the start index is larger than the end index (unless if the {@code CharSequence} is {@code null}).
+     * @since 1.1
+     */
+    public static Optional<IPAddress<?>> tryValueOf(CharSequence address, int start, int end) {
+        return IPAddressFormatter.anyVersionWithDefaults().tryParse(address, start, end);
     }
 
     /**
@@ -285,7 +318,22 @@ public abstract class IPAddress<IP extends IPAddress<IP>> implements Comparable<
      * @return {@code true} if the {@code CharSequence} is a valid IP address, or {@code false} otherwise.
      */
     public static boolean isIPAddress(CharSequence s) {
-        return IPAddressFormatter.anyVersionWithDefaults().isValid(s);
+        return s != null && isIPAddress(s, 0, s.length());
+    }
+
+    /**
+     * Tests whether or not a portion of a {@code CharSequence} is a valid IP address.
+     *
+     * @param s The {@code CharSequence} to test.
+     * @param start The index in the {@code CharSequence} to start checking at, inclusive.
+     * @param end The index in the {@code CharSequence} to end checking at, exclusive.
+     * @return {@code true} if the {@code CharSequence} is a valid IP address, or {@code false} otherwise.
+     * @throws IndexOutOfBoundsException If the start index is negative, or if the end index is larger than the length of the {@code CharSequence},
+     *                                       or if the start index is larger than the end index (unless if the {@code CharSequence} is {@code null}).
+     * @since 1.1
+     */
+    public static boolean isIPAddress(CharSequence s, int start, int end) {
+        return IPAddressFormatter.anyVersionWithDefaults().isValid(s, start, end);
     }
 
     /**

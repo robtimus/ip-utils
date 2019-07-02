@@ -86,7 +86,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      */
     public abstract String format(byte[] address);
 
-    abstract IP valueOf(CharSequence address);
+    abstract IP valueOf(CharSequence address, int start, int end);
 
     /**
      * Parses a {@code CharSequence} to an IP address.
@@ -96,7 +96,24 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @throws NullPointerException If the given {@code CharSequence} is {@code null}.
      * @throws ParseException If the {@code CharSequence} could not be parsed to an IP address.
      */
-    public abstract IP parse(CharSequence source) throws ParseException;
+    public IP parse(CharSequence source) throws ParseException {
+        return parse(source, 0, source.length());
+    }
+
+    /**
+     * Parses a portion of a {@code CharSequence} to an IP address.
+     *
+     * @param source The {@code CharSequence} to parse.
+     * @param start The start index in the {@code CharSequence} to start parsing, inclusive.
+     * @param end The end index in the {@code CharSequence} to end parsing, exclusive.
+     * @return The parsed IP address.
+     * @throws NullPointerException If the given {@code CharSequence} is {@code null}.
+     * @throws IndexOutOfBoundsException If the start index is negative, or if the end index is larger than the length of the {@code CharSequence},
+     *                                       or if the start index is larger than the end index.
+     * @throws ParseException If the {@code CharSequence} could not be parsed to an IP address.
+     * @since 1.1
+     */
+    public abstract IP parse(CharSequence source, int start, int end) throws ParseException;
 
     /**
      * Attempts to parse a {@code CharSequence} to an IP address. Parsing starts at the current index of the given {@code ParsePosition}.
@@ -120,16 +137,49 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @param source The {@code CharSequence} to parse.
      * @return An {@code Optional} with the parsed IP address if parsing succeeded, or {@code Optional#empty()} if parsing fails.
      */
-    public abstract Optional<IP> tryParse(CharSequence source);
+    public Optional<IP> tryParse(CharSequence source) {
+        return source == null ? Optional.empty() : tryParse(source, 0, source.length());
+    }
+
+    /**
+     * Attempts to parse a portion of a {@code CharSequence} to an IP address.
+     *
+     * @param source The {@code CharSequence} to parse.
+     * @param start The start index in the {@code CharSequence} to start parsing, inclusive.
+     * @param end The end index in the {@code CharSequence} to end parsing, exclusive.
+     * @return An {@code Optional} with the parsed IP address if parsing succeeded, or {@code Optional#empty()} if parsing fails.
+     * @throws IndexOutOfBoundsException If the start index is negative, or if the end index is larger than the length of the {@code CharSequence},
+     *                                       or if the start index is larger than the end index (unless if the {@code CharSequence} is {@code null}).
+     * @since 1.1
+     */
+    public abstract Optional<IP> tryParse(CharSequence source, int start, int end);
 
     /**
      * Parses a {@code CharSequence} to an IP address.
      *
      * @param source The {@code CharSequence} to parse.
      * @return A byte array representing the parsed IP address.
+     * @throws NullPointerException If the given {@code CharSequence} is {@code null}.
      * @throws ParseException If the {@code CharSequence} could not be parsed to an IP address.
      */
-    public abstract byte[] parseToBytes(CharSequence source) throws ParseException;
+    public byte[] parseToBytes(CharSequence source) throws ParseException {
+        return parseToBytes(source, 0, source.length());
+    }
+
+    /**
+     * Parses a portion of a {@code CharSequence} to an IP address.
+     *
+     * @param source The {@code CharSequence} to parse.
+     * @param start The start index in the {@code CharSequence} to start parsing, inclusive.
+     * @param end The end index in the {@code CharSequence} to end parsing, exclusive.
+     * @return A byte array representing the parsed IP address.
+     * @throws NullPointerException If the given {@code CharSequence} is {@code null}.
+     * @throws IndexOutOfBoundsException If the start index is negative, or if the end index is larger than the length of the {@code CharSequence},
+     *                                       or if the start index is larger than the end index.
+     * @throws ParseException If the {@code CharSequence} could not be parsed to an IP address.
+     * @since 1.1
+     */
+    public abstract byte[] parseToBytes(CharSequence source, int start, int end) throws ParseException;
 
     /**
      * Attempts to parse a {@code CharSequence} to an IP address. Parsing starts at the current index of the given {@code ParsePosition}.
@@ -154,11 +204,39 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @return An {@code Optional} with a byte array representing the parsed IP address if parsing succeeded,
      *         or {@code Optional#empty()} if parsing fails.
      */
-    public abstract Optional<byte[]> tryParseToBytes(CharSequence source);
+    public Optional<byte[]> tryParseToBytes(CharSequence source) {
+        return source == null ? Optional.empty() : tryParseToBytes(source, 0, source.length());
+    }
 
-    abstract boolean isValid(CharSequence source);
+    /**
+     * Attempts to parse a portion of a {@code CharSequence} to an IP address.
+     *
+     * @param source The {@code CharSequence} to parse.
+     * @param start The start index in the {@code CharSequence} to start parsing, inclusive.
+     * @param end The end index in the {@code CharSequence} to end parsing, exclusive.
+     * @return An {@code Optional} with a byte array representing the parsed IP address if parsing succeeded,
+     *         or {@code Optional#empty()} if parsing fails.
+     * @throws IndexOutOfBoundsException If the start index is negative, or if the end index is larger than the length of the {@code CharSequence},
+     *                                       or if the start index is larger than the end index (unless if the {@code CharSequence} is {@code null}).
+     * @since 1.1
+     */
+    public abstract Optional<byte[]> tryParseToBytes(CharSequence source, int start, int end);
+
+    abstract boolean isValid(CharSequence source, int start, int end);
 
     abstract boolean testIfValid(CharSequence source, Predicate<? super IP> predicate);
+
+    static void checkBounds(CharSequence s, int start, int end) {
+        if (start < 0) {
+            throw new IndexOutOfBoundsException();
+        }
+        if (end > s.length()) {
+            throw new IndexOutOfBoundsException();
+        }
+        if (start > end) {
+            throw new IndexOutOfBoundsException();
+        }
+    }
 
     /**
      * Returns a formatter for printing and parsing IPv4 addresses.
@@ -428,9 +506,10 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
-        IPv4Address valueOf(CharSequence address) {
+        IPv4Address valueOf(CharSequence address, int start, int end) {
             Objects.requireNonNull(address);
-            Parser parser = new Parser(address, 0, true);
+            checkBounds(address, start, end);
+            Parser parser = new Parser(address, start, end, true);
             if (parser.parse()) {
                 return IPv4Address.valueOf(parser.address);
             }
@@ -438,9 +517,10 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
-        public IPv4Address parse(CharSequence source) throws ParseException {
+        public IPv4Address parse(CharSequence source, int start, int end) throws ParseException {
             Objects.requireNonNull(source);
-            Parser parser = new Parser(source, 0, true);
+            checkBounds(source, start, end);
+            Parser parser = new Parser(source, start, end, true);
             if (parser.parse()) {
                 return IPv4Address.valueOf(parser.address);
             }
@@ -450,7 +530,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         @Override
         public IPv4Address parse(CharSequence source, ParsePosition position) {
             Objects.requireNonNull(source);
-            Parser parser = new Parser(source, position.getIndex(), false);
+            Parser parser = new Parser(source, position.getIndex(), source.length(), false);
             if (parser.parse()) {
                 position.setIndex(parser.index);
                 return IPv4Address.valueOf(parser.address);
@@ -460,18 +540,20 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
-        public Optional<IPv4Address> tryParse(CharSequence source) {
+        public Optional<IPv4Address> tryParse(CharSequence source, int start, int end) {
             if (source == null) {
                 return Optional.empty();
             }
-            Parser parser = new Parser(source, 0, true);
+            checkBounds(source, start, end);
+            Parser parser = new Parser(source, start, end, true);
             return parser.parse() ? Optional.of(IPv4Address.valueOf(parser.address)) : Optional.empty();
         }
 
         @Override
-        public byte[] parseToBytes(CharSequence source) throws ParseException {
+        public byte[] parseToBytes(CharSequence source, int start, int end) throws ParseException {
             Objects.requireNonNull(source);
-            Parser parser = new Parser(source, 0, true);
+            checkBounds(source, start, end);
+            Parser parser = new Parser(source, start, end, true);
             if (parser.parse()) {
                 return Bytes.intToAddress(parser.address);
             }
@@ -481,7 +563,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         @Override
         public byte[] parseToBytes(CharSequence source, ParsePosition position) {
             Objects.requireNonNull(source);
-            Parser parser = new Parser(source, position.getIndex(), false);
+            Parser parser = new Parser(source, position.getIndex(), source.length(), false);
             if (parser.parse()) {
                 position.setIndex(parser.index);
                 return Bytes.intToAddress(parser.address);
@@ -491,17 +573,22 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
-        public Optional<byte[]> tryParseToBytes(CharSequence source) {
+        public Optional<byte[]> tryParseToBytes(CharSequence source, int start, int end) {
             if (source == null) {
                 return Optional.empty();
             }
-            Parser parser = new Parser(source, 0, true);
+            checkBounds(source, start, end);
+            Parser parser = new Parser(source, start, end, true);
             return parser.parse() ? Optional.of(Bytes.intToAddress(parser.address)) : Optional.empty();
         }
 
         @Override
-        boolean isValid(CharSequence source) {
-            return source != null && new Parser(source, 0, true).parse();
+        boolean isValid(CharSequence source, int start, int end) {
+            if (source == null) {
+                return false;
+            }
+            checkBounds(source, start, end);
+            return new Parser(source, start, end, true).parse();
         }
 
         @Override
@@ -509,7 +596,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
             if (source == null) {
                 return false;
             }
-            Parser parser = new Parser(source, 0, true);
+            Parser parser = new Parser(source, 0, source.length(), true);
             return parser.parse() && predicate.test(IPv4Address.valueOf(parser.address));
         }
 
@@ -522,6 +609,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         private static final class Parser {
 
             private final CharSequence source;
+            private final int end;
             private final boolean parseAll;
 
             private int index;
@@ -529,8 +617,9 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
 
             private int address = 0;
 
-            private Parser(CharSequence source, int start, boolean parseAll) {
+            private Parser(CharSequence source, int start, int end, boolean parseAll) {
                 this.source = source;
+                this.end = end;
                 this.parseAll = parseAll;
 
                 index = start;
@@ -549,7 +638,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
                 int octet = 0;
                 int digits;
                 // octets are in decimal, so maximum 3 digits long
-                for (digits = 0; digits < 3 && index < source.length(); digits++, index++) {
+                for (digits = 0; digits < 3 && index < end; digits++, index++) {
                     char c = source.charAt(index);
                     int d = Character.digit(c, 10);
                     if (d == -1) {
@@ -572,7 +661,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
             }
 
             private boolean parseDot() {
-                if (index >= source.length() || source.charAt(index) != '.') {
+                if (index >= end || source.charAt(index) != '.') {
                     errorIndex = index;
                     return false;
                 }
@@ -581,7 +670,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
             }
 
             private boolean parseEnd() {
-                if (parseAll && index != source.length()) {
+                if (parseAll && index != end) {
                     errorIndex = index;
                     return false;
                 }
@@ -639,9 +728,10 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
-        IPv6Address valueOf(CharSequence address) {
+        IPv6Address valueOf(CharSequence address, int start, int end) {
             Objects.requireNonNull(address);
-            Parser parser = new Parser(address, 0, true);
+            checkBounds(address, start, end);
+            Parser parser = new Parser(address, start, end, true);
             if (parser.parse()) {
                 return IPv6Address.valueOf(parser.highAddress, parser.lowAddress);
             }
@@ -649,9 +739,10 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
-        public IPv6Address parse(CharSequence source) throws ParseException {
+        public IPv6Address parse(CharSequence source, int start, int end) throws ParseException {
             Objects.requireNonNull(source);
-            Parser parser = new Parser(source, 0, true);
+            checkBounds(source, start, end);
+            Parser parser = new Parser(source, start, end, true);
             if (parser.parse()) {
                 return IPv6Address.valueOf(parser.highAddress, parser.lowAddress);
             }
@@ -661,7 +752,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         @Override
         public IPv6Address parse(CharSequence source, ParsePosition position) {
             Objects.requireNonNull(source);
-            Parser parser = new Parser(source, position.getIndex(), false);
+            Parser parser = new Parser(source, position.getIndex(), source.length(), false);
             if (parser.parse()) {
                 position.setIndex(parser.index);
                 return IPv6Address.valueOf(parser.highAddress, parser.lowAddress);
@@ -671,18 +762,20 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
-        public Optional<IPv6Address> tryParse(CharSequence source) {
+        public Optional<IPv6Address> tryParse(CharSequence source, int start, int end) {
             if (source == null) {
                 return Optional.empty();
             }
-            Parser parser = new Parser(source, 0, true);
+            checkBounds(source, start, end);
+            Parser parser = new Parser(source, start, end, true);
             return parser.parse() ? Optional.of(IPv6Address.valueOf(parser.highAddress, parser.lowAddress)) : Optional.empty();
         }
 
         @Override
-        public byte[] parseToBytes(CharSequence source) throws ParseException {
+        public byte[] parseToBytes(CharSequence source, int start, int end) throws ParseException {
             Objects.requireNonNull(source);
-            Parser parser = new Parser(source, 0, true);
+            checkBounds(source, start, end);
+            Parser parser = new Parser(source, start, end, true);
             if (parser.parse()) {
                 return Bytes.longsToAddress(parser.highAddress, parser.lowAddress);
             }
@@ -692,7 +785,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         @Override
         public byte[] parseToBytes(CharSequence source, ParsePosition position) {
             Objects.requireNonNull(source);
-            Parser parser = new Parser(source, position.getIndex(), false);
+            Parser parser = new Parser(source, position.getIndex(), source.length(), false);
             if (parser.parse()) {
                 position.setIndex(parser.index);
                 return Bytes.longsToAddress(parser.highAddress, parser.lowAddress);
@@ -702,17 +795,22 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
-        public Optional<byte[]> tryParseToBytes(CharSequence source) {
+        public Optional<byte[]> tryParseToBytes(CharSequence source, int start, int end) {
             if (source == null) {
                 return Optional.empty();
             }
-            Parser parser = new Parser(source, 0, true);
+            checkBounds(source, start, end);
+            Parser parser = new Parser(source, start, end, true);
             return parser.parse() ? Optional.of(Bytes.longsToAddress(parser.highAddress, parser.lowAddress)) : Optional.empty();
         }
 
         @Override
-        boolean isValid(CharSequence source) {
-            return source != null && new Parser(source, 0, true).parse();
+        boolean isValid(CharSequence source, int start, int end) {
+            if (source == null) {
+                return false;
+            }
+            checkBounds(source, start, end);
+            return new Parser(source, start, end, true).parse();
         }
 
         @Override
@@ -720,8 +818,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
             if (source == null) {
                 return false;
             }
-            Objects.requireNonNull(source);
-            Parser parser = new Parser(source, 0, true);
+            Parser parser = new Parser(source, 0, source.length(), true);
             return parser.parse() && predicate.test(IPv6Address.valueOf(parser.highAddress, parser.lowAddress));
         }
 
@@ -770,6 +867,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         private static final class Parser {
 
             private final CharSequence source;
+            private final int end;
             private final boolean parseAll;
 
             private final IPv4.Parser ipv4Parser;
@@ -785,12 +883,13 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
             private long zeroesSectionHighAddress = 0;
             private long zeroesSectionLowAddress = 0;
 
-            private Parser(CharSequence source, int start, boolean parseAll) {
+            private Parser(CharSequence source, int start, int end, boolean parseAll) {
                 this.source = source;
+                this.end = end;
                 this.parseAll = parseAll;
 
                 // the index will be changed as necessary
-                ipv4Parser = new IPv4.Parser(source, start, false);
+                ipv4Parser = new IPv4.Parser(source, start, end, false);
 
                 index = start;
                 errorIndex = -1;
@@ -928,7 +1027,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
                     errorIndex = Math.max(index, errorIndex);
                     return false;
                 }
-                if (parseAll && index != source.length()) {
+                if (parseAll && index != end) {
                     errorIndex = Math.max(index, errorIndex);
                     return false;
                 }
@@ -1007,7 +1106,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
             // low-level parse methods - these update only the index
 
             private boolean parseOpeningBracket() {
-                if (index < source.length() && source.charAt(index) == '[') {
+                if (index < end && source.charAt(index) == '[') {
                     index++;
                     return true;
                 }
@@ -1015,7 +1114,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
             }
 
             private boolean parseClosingBracket() {
-                if (index < source.length() && source.charAt(index) == ']') {
+                if (index < end && source.charAt(index) == ']') {
                     index++;
                     return true;
                 }
@@ -1023,7 +1122,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
             }
 
             private boolean parseDoubleColon() {
-                if (index < source.length() - 1 && source.charAt(index) == ':' && source.charAt(index + 1) == ':') {
+                if (index < end - 1 && source.charAt(index) == ':' && source.charAt(index + 1) == ':') {
                     index += 2;
                     return true;
                 }
@@ -1031,7 +1130,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
             }
 
             private boolean parseColon() {
-                if (index < source.length() && source.charAt(index) == ':') {
+                if (index < end && source.charAt(index) == ':') {
                     index++;
                     return true;
                 }
@@ -1041,7 +1140,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
             private int parseHextet() {
                 int hextet = 0;
                 int chars;
-                for (chars = 0; chars < 4 && index < source.length(); chars++, index++) {
+                for (chars = 0; chars < 4 && index < end; chars++, index++) {
                     char c = source.charAt(index);
                     int d = Character.digit(c, 16);
                     if (d == -1) {
@@ -1121,54 +1220,55 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
-        IPAddress<?> valueOf(CharSequence address) {
-            return getFormatter(address, 0).valueOf(address);
+        IPAddress<?> valueOf(CharSequence address, int start, int end) {
+            return getFormatter(address, start, end).valueOf(address, start, end);
         }
 
         @Override
-        public IPAddress<?> parse(CharSequence source) throws ParseException {
-            return getFormatter(source, 0).parse(source);
+        public IPAddress<?> parse(CharSequence source, int start, int end) throws ParseException {
+            return getFormatter(source, start, end).parse(source, start, end);
         }
 
         @Override
         public IPAddress<?> parse(CharSequence source, ParsePosition position) {
-            return getFormatter(source, position.getIndex()).parse(source, position);
+            return getFormatter(source, position.getIndex(), source.length()).parse(source, position);
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        public Optional<IPAddress<?>> tryParse(CharSequence source) {
-            return source == null ? Optional.empty() : (Optional<IPAddress<?>>) getFormatter(source, 0).tryParse(source);
+        public Optional<IPAddress<?>> tryParse(CharSequence source, int start, int end) {
+            return source == null ? Optional.empty() : (Optional<IPAddress<?>>) getFormatter(source, start, end).tryParse(source, start, end);
         }
 
         @Override
-        public byte[] parseToBytes(CharSequence source) throws ParseException {
-            return getFormatter(source, 0).parseToBytes(source);
+        public byte[] parseToBytes(CharSequence source, int start, int end) throws ParseException {
+            return getFormatter(source, start, end).parseToBytes(source, start, end);
         }
 
         @Override
         public byte[] parseToBytes(CharSequence source, ParsePosition position) {
-            return getFormatter(source, position.getIndex()).parseToBytes(source, position);
+            return getFormatter(source, position.getIndex(), source.length()).parseToBytes(source, position);
         }
 
         @Override
-        public Optional<byte[]> tryParseToBytes(CharSequence source) {
-            return source == null ? Optional.empty() : getFormatter(source, 0).tryParseToBytes(source);
+        public Optional<byte[]> tryParseToBytes(CharSequence source, int start, int end) {
+            return source == null ? Optional.empty() : getFormatter(source, start, end).tryParseToBytes(source, start, end);
         }
 
         @Override
-        boolean isValid(CharSequence source) {
-            return source != null && getFormatter(source, 0).isValid(source);
+        boolean isValid(CharSequence source, int start, int end) {
+            return source != null && getFormatter(source, start, end).isValid(source, start, end);
         }
 
         @Override
         boolean testIfValid(CharSequence source, Predicate<? super IPAddress<?>> predicate) {
-            return source != null && getFormatter(source, 0).testIfValid(source, predicate);
+            return source != null && getFormatter(source, 0, source.length()).testIfValid(source, predicate);
         }
 
-        private IPAddressFormatter<?> getFormatter(CharSequence source, int start) {
-            int firstDot = indexOf(source, '.', start);
-            int firstColon = indexOf(source, ':', start);
+        private IPAddressFormatter<?> getFormatter(CharSequence source, int start, int end) {
+            checkBounds(source, start, end);
+            int firstDot = indexOf(source, '.', start, end);
+            int firstColon = indexOf(source, ':', start, end);
             if (firstDot == -1 && firstColon == -1) {
                 // parsing will fail anyway, doesn't matter which one to use
                 return ipv6;
@@ -1185,8 +1285,8 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
             return firstColon < firstDot ? ipv6 : ipv4;
         }
 
-        private int indexOf(CharSequence source, char c, int start) {
-            for (int i = start, length = source.length(); i < length; i++) {
+        private int indexOf(CharSequence source, char c, int start, int end) {
+            for (int i = start, length = end; i < length; i++) {
                 if (c == source.charAt(i)) {
                     return i;
                 }

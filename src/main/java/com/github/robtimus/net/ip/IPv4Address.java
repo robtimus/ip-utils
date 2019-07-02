@@ -352,7 +352,24 @@ public final class IPv4Address extends IPAddress<IPv4Address> {
      * @throws IllegalArgumentException If the given {@code CharSequence} does not represent a valid IPv4 address.
      */
     public static IPv4Address valueOf(CharSequence address) {
-        return IPAddressFormatter.ipv4().valueOf(address);
+        return valueOf(address, 0, address.length());
+    }
+
+    /**
+     * Returns an IPv4 address represented by a portion of a {@code CharSequence}.
+     *
+     * @param address The IPv4 address as a {@code CharSequence}.
+     * @param start The index in the {@code CharSequence} where the IPv4 address starts, inclusive.
+     * @param end The index in the {@code CharSequence} where the IPv4 address ends, exclusive.
+     * @return An IPv4 address that represents the given address.
+     * @throws NullPointerException If the given {@code CharSequence} is {@code null}.
+     * @throws IndexOutOfBoundsException If the start index is negative, or if the end index is larger than the length of the {@code CharSequence},
+     *                                       or if the start index is larger than the end index.
+     * @throws IllegalArgumentException If the given {@code CharSequence} does not represent a valid IPv4 address.
+     * @since 1.1
+     */
+    public static IPv4Address valueOf(CharSequence address, int start, int end) {
+        return IPAddressFormatter.ipv4().valueOf(address, start, end);
     }
 
     /**
@@ -363,7 +380,23 @@ public final class IPv4Address extends IPAddress<IPv4Address> {
      *         {@code CharSequence} is {@code null}or does not represent a valid IPv4 address.
      */
     public static Optional<IPv4Address> tryValueOfIPv4(CharSequence address) {
-        return IPAddressFormatter.ipv4().tryParse(address);
+        return address == null ? Optional.empty() : tryValueOfIPv4(address, 0, address.length());
+    }
+
+    /**
+     * Attempts to return an IPv4 address represented by a portion of a {@code CharSequence}.
+     *
+     * @param address The possible IPv4 address as a {@code CharSequence}.
+     * @param start The index in the {@code CharSequence} where the IPv4 address starts, inclusive.
+     * @param end The index in the {@code CharSequence} where the IPv4 address ends, exclusive.
+     * @return An {@link Optional} with the IPv4 address that represents the given address, or {@link Optional#empty()} if the given
+     *         {@code CharSequence} is {@code null}or does not represent a valid IPv4 address.
+     * @throws IndexOutOfBoundsException If the start index is negative, or if the end index is larger than the length of the {@code CharSequence},
+     *                                       or if the start index is larger than the end index (unless if the {@code CharSequence} is {@code null}).
+     * @since 1.1
+     */
+    public static Optional<IPv4Address> tryValueOfIPv4(CharSequence address, int start, int end) {
+        return IPAddressFormatter.ipv4().tryParse(address, start, end);
     }
 
     /**
@@ -422,7 +455,22 @@ public final class IPv4Address extends IPAddress<IPv4Address> {
      * @return {@code true} if the {@code CharSequence} is a valid IP address, or {@code false} otherwise.
      */
     public static boolean isIPv4Address(CharSequence s) {
-        return IPAddressFormatter.ipv4().isValid(s);
+        return s != null && isIPv4Address(s, 0, s.length());
+    }
+
+    /**
+     * Tests whether or not a portion of a {@code CharSequence} is a valid IPv4 address.
+     *
+     * @param s The {@code CharSequence} to test.
+     * @param start The index in the {@code CharSequence} to start checking at, inclusive.
+     * @param end The index in the {@code CharSequence} to end checking at, exclusive.
+     * @return {@code true} if the {@code CharSequence} is a valid IP address, or {@code false} otherwise.
+     * @throws IndexOutOfBoundsException If the start index is negative, or if the end index is larger than the length of the {@code CharSequence},
+     *                                       or if the start index is larger than the end index (unless if the {@code CharSequence} is {@code null}).
+     * @since 1.1
+     */
+    public static boolean isIPv4Address(CharSequence s, int start, int end) {
+        return IPAddressFormatter.ipv4().isValid(s, start, end);
     }
 
     /**

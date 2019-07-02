@@ -57,13 +57,30 @@ public final class IPv6Subnet extends Subnet<IPv6Address> implements IPv6Range {
      * @throws IllegalArgumentException If the given CIDR notation is invalid.
      */
     public static IPv6Subnet valueOf(CharSequence cidrNotation) {
-        int index = indexOf(cidrNotation, '/');
+        return valueOf(cidrNotation, 0, cidrNotation.length());
+    }
+
+    /**
+     * Returns an IPv6 subnet represented by a CIDR notation.
+     *
+     * @param cidrNotation The CIDR notation representing the IPv6 subnet.
+     * @param start The index in the {@code CharSequence} where the CIDR notation starts, inclusive.
+     * @param end The index in the {@code CharSequence} where the CIDR notation ends, exclusive.
+     * @return An IPv6 subnet represented by the given CIDR notation.
+     * @throws NullPointerException If the given CIDR notation is {@code null}.
+     * @throws IndexOutOfBoundsException If the start index is negative, or if the end index is larger than the length of the {@code CharSequence},
+     *                                       or if the start index is larger than the end index.
+     * @throws IllegalArgumentException If the given CIDR notation is invalid.
+     * @since 1.1
+     */
+    public static IPv6Subnet valueOf(CharSequence cidrNotation, int start, int end) {
+        int index = indexOf(cidrNotation, '/', start, end);
         if (index == -1) {
             throw new IllegalArgumentException(Messages.Subnet.invalidCIDRNotation.get(cidrNotation));
         }
-        IPv6Address routingPrefix = IPAddressFormatter.ipv6WithDefaults().tryParse(new SubSequence(cidrNotation, 0, index))
+        IPv6Address routingPrefix = IPAddressFormatter.ipv6WithDefaults().tryParse(cidrNotation, start, index)
                 .orElseThrow(() -> new IllegalArgumentException(Messages.Subnet.invalidCIDRNotation.get(cidrNotation)));
-        int prefixLength = tryParseInt(cidrNotation, index + 1, cidrNotation.length())
+        int prefixLength = tryParseInt(cidrNotation, index + 1, end)
                 .orElseThrow(() -> new IllegalArgumentException(Messages.Subnet.invalidCIDRNotation.get(cidrNotation)));
         return valueOf(routingPrefix, prefixLength);
     }
@@ -76,16 +93,32 @@ public final class IPv6Subnet extends Subnet<IPv6Address> implements IPv6Range {
      *         or {@link Optional#empty()} if the given CIDR notation is {@code null} or invalid.
      */
     public static Optional<IPv6Subnet> tryValueOfIPv6(CharSequence cidrNotation) {
+        return cidrNotation == null ? Optional.empty() : tryValueOfIPv6(cidrNotation, 0, cidrNotation.length());
+    }
+
+    /**
+     * Attempts to return an IPv6 subnet represented by a portion of a {@code CharSequence}.
+     *
+     * @param cidrNotation The possible CIDR notation representing the IPv6 subnet.
+     * @param start The index in the {@code CharSequence} where the CIDR notation starts, inclusive.
+     * @param end The index in the {@code CharSequence} where the CIDR notation ends, exclusive.
+     * @return An {@link Optional} with the IPv6 subnet represented by the given CIDR notation,
+     *         or {@link Optional#empty()} if the given CIDR notation is {@code null} or invalid.
+     * @throws IndexOutOfBoundsException If the start index is negative, or if the end index is larger than the length of the {@code CharSequence},
+     *                                       or if the start index is larger than the end index (unless if the {@code CharSequence} is {@code null}).
+     * @since 1.1
+     */
+    public static Optional<IPv6Subnet> tryValueOfIPv6(CharSequence cidrNotation, int start, int end) {
         if (cidrNotation == null) {
             return Optional.empty();
         }
-        int index = indexOf(cidrNotation, '/');
+        int index = indexOf(cidrNotation, '/', start, end);
         if (index == -1) {
             return Optional.empty();
         }
-        int prefixLength = tryParseInt(cidrNotation, index + 1, cidrNotation.length()).orElse(-1);
+        int prefixLength = tryParseInt(cidrNotation, index + 1, end).orElse(-1);
         if (0 <= prefixLength && prefixLength <= IPv6Address.BITS) {
-            return IPAddressFormatter.ipv6WithDefaults().tryParse(new SubSequence(cidrNotation, 0, index))
+            return IPAddressFormatter.ipv6WithDefaults().tryParse(cidrNotation, start, index)
                     .filter(ip -> ip.isValidRoutingPrefix(prefixLength))
                     .map(ip -> valueOf(ip, prefixLength));
         }
@@ -135,16 +168,31 @@ public final class IPv6Subnet extends Subnet<IPv6Address> implements IPv6Range {
      * @return {@code true} if the {@code CharSequence} is a valid IPv6 subnet, or {@code false} otherwise.
      */
     public static boolean isIPv6Subnet(CharSequence s) {
+        return s != null && isIPv6Subnet(s, 0, s.length());
+    }
+
+    /**
+     * Tests whether or not a portion of a {@code CharSequence} is a valid IPv6 subnet.
+     *
+     * @param s The {@code CharSequence} to test.
+     * @param start The index in the {@code CharSequence} to start checking at, inclusive.
+     * @param end The index in the {@code CharSequence} to end checking at, exclusive.
+     * @return {@code true} if the {@code CharSequence} is a valid IPv6 subnet, or {@code false} otherwise.
+     * @throws IndexOutOfBoundsException If the start index is negative, or if the end index is larger than the length of the {@code CharSequence},
+     *                                       or if the start index is larger than the end index (unless if the {@code CharSequence} is {@code null}).
+     * @since 1.1
+     */
+    public static boolean isIPv6Subnet(CharSequence s, int start, int end) {
         if (s == null) {
             return false;
         }
-        int index = indexOf(s, '/');
+        int index = indexOf(s, '/', start, end);
         if (index == -1) {
             return false;
         }
-        int prefixLength = tryParseInt(s, index + 1, s.length()).orElse(-1);
+        int prefixLength = tryParseInt(s, index + 1, end).orElse(-1);
         if (0 <= prefixLength && prefixLength <= IPv6Address.BITS) {
-            return IPAddressFormatter.ipv6WithDefaults().tryParse(new SubSequence(s, 0, index))
+            return IPAddressFormatter.ipv6WithDefaults().tryParse(s, start, index)
                     .map(ip -> ip.isValidRoutingPrefix(prefixLength))
                     .orElse(false);
         }

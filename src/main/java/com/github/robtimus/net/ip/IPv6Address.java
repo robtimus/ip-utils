@@ -406,7 +406,24 @@ public final class IPv6Address extends IPAddress<IPv6Address> {
      * @throws IllegalArgumentException If the given {@code CharSequence} does not represent a valid IPv6 address.
      */
     public static IPv6Address valueOf(CharSequence address) {
-        return IPAddressFormatter.ipv6WithDefaults().valueOf(address);
+        return valueOf(address, 0, address.length());
+    }
+
+    /**
+     * Returns an IPv6 address represented by a portion of a {@code CharSequence}.
+     *
+     * @param address The IPv6 address as a {@code CharSequence}.
+     * @param start The index in the {@code CharSequence} where the IPv6 address starts, inclusive.
+     * @param end The index in the {@code CharSequence} where the IPv6 address ends, exclusive.
+     * @return An IPv6 address that represents the given address.
+     * @throws NullPointerException If the given {@code CharSequence} is {@code null}.
+     * @throws IndexOutOfBoundsException If the start index is negative, or if the end index is larger than the length of the {@code CharSequence},
+     *                                       or if the start index is larger than the end index.
+     * @throws IllegalArgumentException If the given {@code CharSequence} does not represent a valid IPv6 address.
+     * @since 1.1
+     */
+    public static IPv6Address valueOf(CharSequence address, int start, int end) {
+        return IPAddressFormatter.ipv6WithDefaults().valueOf(address, start, end);
     }
 
     /**
@@ -417,7 +434,23 @@ public final class IPv6Address extends IPAddress<IPv6Address> {
      *         {@code CharSequence} is {@code null}or does not represent a valid IPv6 address.
      */
     public static Optional<IPv6Address> tryValueOfIPv6(CharSequence address) {
-        return IPAddressFormatter.ipv6WithDefaults().tryParse(address);
+        return address == null ? Optional.empty() : tryValueOfIPv6(address, 0, address.length());
+    }
+
+    /**
+     * Attempts to return an IPv6 address represented by a portion of a {@code CharSequence}.
+     *
+     * @param address The possible IPv6 address as a {@code CharSequence}.
+     * @param start The index in the {@code CharSequence} where the IPv6 address starts, inclusive.
+     * @param end The index in the {@code CharSequence} where the IPv6 address ends, exclusive.
+     * @return An {@link Optional} with the IPv6 address that represents the given address, or {@link Optional#empty()} if the given
+     *         {@code CharSequence} is {@code null}or does not represent a valid IPv6 address.
+     * @throws IndexOutOfBoundsException If the start index is negative, or if the end index is larger than the length of the {@code CharSequence},
+     *                                       or if the start index is larger than the end index (unless if the {@code CharSequence} is {@code null}).
+     * @since 1.1
+     */
+    public static Optional<IPv6Address> tryValueOfIPv6(CharSequence address, int start, int end) {
+        return IPAddressFormatter.ipv6WithDefaults().tryParse(address, start, end);
     }
 
     /**
@@ -457,7 +490,22 @@ public final class IPv6Address extends IPAddress<IPv6Address> {
      * @return {@code true} if the given {@code CharSequence} is a valid IPv6 address, or {@code false} otherwise.
      */
     public static boolean isIPv6Address(CharSequence s) {
-        return IPAddressFormatter.ipv6WithDefaults().isValid(s);
+        return s != null && isIPv6Address(s, 0, s.length());
+    }
+
+    /**
+     * Tests whether or not a portion of a {@code CharSequence} is a valid IPv6 address.
+     *
+     * @param s The {@code CharSequence} to test.
+     * @param start The index in the {@code CharSequence} to start checking at, inclusive.
+     * @param end The index in the {@code CharSequence} to end checking at, exclusive.
+     * @return {@code true} if the given {@code CharSequence} is a valid IPv6 address, or {@code false} otherwise.
+     * @throws IndexOutOfBoundsException If the start index is negative, or if the end index is larger than the length of the {@code CharSequence},
+     *                                       or if the start index is larger than the end index (unless if the {@code CharSequence} is {@code null}).
+     * @since 1.1
+     */
+    public static boolean isIPv6Address(CharSequence s, int start, int end) {
+        return IPAddressFormatter.ipv6WithDefaults().isValid(s, start, end);
     }
 
     /**

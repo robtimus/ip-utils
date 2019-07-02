@@ -387,7 +387,10 @@ public class IPAddressFormatterTest {
         public DynamicTest[] testParse() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
-                    dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> formatter.parse(null))),
+                    dynamicTest("null", () -> {
+                        assertThrows(NullPointerException.class, () -> formatter.parse(null));
+                        assertThrows(NullPointerException.class, () -> formatter.parse(null, 0, 0));
+                    }),
                     testParseInvalid(formatter, "", 0),
                     testParse(formatter, "127.0.0.1", IPv4Address.LOCALHOST),
                     testParse(formatter, "0.0.0.0", IPv4Address.MIN_VALUE),
@@ -405,13 +408,29 @@ public class IPAddressFormatterTest {
         }
 
         private DynamicTest testParse(IPAddressFormatter<IPv4Address> formatter, String source, IPv4Address expected) {
-            return dynamicTest(source, () -> assertEquals(expected, formatter.parse(source)));
+            return dynamicTest(source, () -> {
+                assertEquals(expected, formatter.parse(source));
+                assertEquals(expected, formatter.parse("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(expected, formatter.parse("z" + source + "z", 1, 1 + source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, 0, -1));
+            });
         }
 
         private DynamicTest testParseInvalid(IPAddressFormatter<IPv4Address> formatter, String source, int errorIndex) {
             return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                 ParseException exception = assertThrows(ParseException.class, () -> formatter.parse(source));
                 assertEquals(errorIndex, exception.getErrorOffset());
+
+                exception = assertThrows(ParseException.class, () -> formatter.parse("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(errorIndex + 1, exception.getErrorOffset());
+
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, 0, -1));
             });
         }
 
@@ -494,7 +513,10 @@ public class IPAddressFormatterTest {
         public DynamicTest[] testTryParse() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
-                    testTryParse(formatter, null, Optional.empty()),
+                    dynamicTest("null", () -> {
+                        assertEquals(Optional.empty(), formatter.tryParse(null));
+                        assertEquals(Optional.empty(), formatter.tryParse(null, 0, 0));
+                    }),
                     testTryParse(formatter, "", Optional.empty()),
                     testTryParse(formatter, "127.0.0.1", Optional.of(IPv4Address.LOCALHOST)),
                     testTryParse(formatter, "0.0.0.0", Optional.of(IPv4Address.MIN_VALUE)),
@@ -513,14 +535,25 @@ public class IPAddressFormatterTest {
 
         private DynamicTest testTryParse(IPAddressFormatter<IPv4Address> formatter, String source, Optional<IPv4Address> expected) {
             String displayName = String.valueOf(source);
-            return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> assertEquals(expected, formatter.tryParse(source)));
+            return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> {
+                assertEquals(expected, formatter.tryParse(source));
+                assertEquals(expected, formatter.tryParse("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(expected, formatter.tryParse("z" + source + "z", 1, 1 + source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParse(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParse(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParse(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParse(source, 0, -1));
+            });
         }
 
         @TestFactory
         public DynamicTest[] testParseToBytes() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
-                    dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> formatter.parseToBytes(null))),
+                    dynamicTest("null", () -> {
+                        assertThrows(NullPointerException.class, () -> formatter.parseToBytes(null));
+                        assertThrows(NullPointerException.class, () -> formatter.parseToBytes(null, 0, 0));
+                    }),
                     testParseToBytesInvalid(formatter, "", 0),
                     testParseToBytes(formatter, "127.0.0.1", new byte[] { 127, 0, 0, 1, }),
                     testParseToBytes(formatter, "0.0.0.0", new byte[] { 0, 0, 0, 0, }),
@@ -538,13 +571,29 @@ public class IPAddressFormatterTest {
         }
 
         private DynamicTest testParseToBytes(IPAddressFormatter<IPv4Address> formatter, String source, byte[] expected) {
-            return dynamicTest(source, () -> assertArrayEquals(expected, formatter.parseToBytes(source)));
+            return dynamicTest(source, () -> {
+                assertArrayEquals(expected, formatter.parseToBytes(source));
+                assertArrayEquals(expected, formatter.parseToBytes("1" + source + "1", 1, 1 + source.length()));
+                assertArrayEquals(expected, formatter.parseToBytes("z" + source + "z", 1, 1 + source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parseToBytes(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parseToBytes(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parseToBytes(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parseToBytes(source, 0, -1));
+            });
         }
 
         private DynamicTest testParseToBytesInvalid(IPAddressFormatter<IPv4Address> formatter, String source, int errorIndex) {
             return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                 ParseException exception = assertThrows(ParseException.class, () -> formatter.parseToBytes(source));
                 assertEquals(errorIndex, exception.getErrorOffset());
+
+                exception = assertThrows(ParseException.class, () -> formatter.parseToBytes("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(errorIndex + 1, exception.getErrorOffset());
+
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, 0, -1));
             });
         }
 
@@ -629,7 +678,10 @@ public class IPAddressFormatterTest {
         public DynamicTest[] testTryParseToBytes() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
-                    testTryParseToBytesEmptyOptional(formatter, null),
+                    dynamicTest("null", () -> {
+                        assertEquals(Optional.empty(), formatter.tryParseToBytes(null));
+                        assertEquals(Optional.empty(), formatter.tryParseToBytes(null, 0, 0));
+                    }),
                     testTryParseToBytesEmptyOptional(formatter, ""),
                     testTryParseToBytes(formatter, "127.0.0.1", new byte[] { 127, 0, 0, 1, }),
                     testTryParseToBytes(formatter, "0.0.0.0", new byte[] { 0, 0, 0, 0, }),
@@ -647,20 +699,33 @@ public class IPAddressFormatterTest {
         }
 
         private DynamicTest testTryParseToBytes(IPAddressFormatter<IPv4Address> formatter, String source, byte[] expected) {
-            return dynamicTest(source, () -> assertArrayEquals(expected, formatter.tryParseToBytes(source).get()));
+            return dynamicTest(source, () -> {
+                assertArrayEquals(expected, formatter.tryParseToBytes(source).get());
+                assertArrayEquals(expected, formatter.tryParseToBytes("1" + source + "1", 1, 1 + source.length()).get());
+                assertArrayEquals(expected, formatter.tryParseToBytes("z" + source + "z", 1, 1 + source.length()).get());
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, 0, -1));
+            });
         }
 
         private DynamicTest testTryParseToBytesEmptyOptional(IPAddressFormatter<IPv4Address> formatter, String source) {
             String displayName = String.valueOf(source);
-            return dynamicTest(displayName.isEmpty() ? "empty" : displayName,
-                    () -> assertEquals(Optional.empty(), formatter.tryParseToBytes(source)));
+            return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> {
+                assertEquals(Optional.empty(), formatter.tryParseToBytes(source));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, 0, -1));
+            });
         }
 
         @TestFactory
         public DynamicTest[] testIsValid() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
-                    testIsValid(formatter, null, false),
+                    dynamicTest("null", () -> assertEquals(false, formatter.isValid(null, 0, 0))),
                     testIsValid(formatter, "", false),
                     testIsValid(formatter, "127.0.0.1", true),
                     testIsValid(formatter, "0.0.0.0", true),
@@ -679,7 +744,15 @@ public class IPAddressFormatterTest {
 
         private DynamicTest testIsValid(IPAddressFormatter<IPv4Address> formatter, String source, boolean expected) {
             String displayName = String.valueOf(source);
-            return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> assertEquals(expected, formatter.isValid(source)));
+            return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> {
+                assertEquals(expected, formatter.isValid(source, 0, source.length()));
+                assertEquals(expected, formatter.isValid("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(expected, formatter.isValid("z" + source + "z", 1, 1 + source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.isValid(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.isValid(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.isValid(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.isValid(source, 0, -1));
+            });
         }
 
         @TestFactory
@@ -1017,7 +1090,10 @@ public class IPAddressFormatterTest {
         public DynamicTest[] testParse() {
             IPAddressFormatter<IPv6Address> formatter = IPAddressFormatter.ipv6WithDefaults();
             return new DynamicTest[] {
-                    dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> formatter.parse(null))),
+                    dynamicTest("null", () -> {
+                        assertThrows(NullPointerException.class, () -> formatter.parse(null));
+                        assertThrows(NullPointerException.class, () -> formatter.parse(null, 0, 0));
+                    }),
                     testParseInvalid(formatter, "", 0),
 
                     testParse(formatter, "::1", IPv6Address.LOCALHOST),
@@ -1108,13 +1184,29 @@ public class IPAddressFormatterTest {
         }
 
         private DynamicTest testParse(IPAddressFormatter<IPv6Address> formatter, String source, IPv6Address expected) {
-            return dynamicTest(source, () -> assertEquals(expected, formatter.parse(source)));
+            return dynamicTest(source, () -> {
+                assertEquals(expected, formatter.parse(source));
+                assertEquals(expected, formatter.parse("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(expected, formatter.parse("z" + source + "z", 1, 1 + source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, 0, -1));
+            });
         }
 
         private DynamicTest testParseInvalid(IPAddressFormatter<IPv6Address> formatter, String source, int errorIndex) {
             return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                 ParseException exception = assertThrows(ParseException.class, () -> formatter.parse(source));
                 assertEquals(errorIndex, exception.getErrorOffset());
+
+                exception = assertThrows(ParseException.class, () -> formatter.parse("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(errorIndex + 1, exception.getErrorOffset());
+
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, 0, -1));
             });
         }
 
@@ -1275,7 +1367,10 @@ public class IPAddressFormatterTest {
         public DynamicTest[] testTryParse() {
             IPAddressFormatter<IPv6Address> formatter = IPAddressFormatter.ipv6WithDefaults();
             return new DynamicTest[] {
-                    testTryParse(formatter, null, Optional.empty()),
+                    dynamicTest("null", () -> {
+                        assertEquals(Optional.empty(), formatter.tryParse(null));
+                        assertEquals(Optional.empty(), formatter.tryParse(null, 0, 0));
+                    }),
                     testTryParse(formatter, "", Optional.empty()),
 
                     testTryParse(formatter, "::1", Optional.of(IPv6Address.LOCALHOST)),
@@ -1374,14 +1469,25 @@ public class IPAddressFormatterTest {
 
         private DynamicTest testTryParse(IPAddressFormatter<IPv6Address> formatter, String source, Optional<IPv6Address> expected) {
             String displayName = String.valueOf(source);
-            return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> assertEquals(expected, formatter.tryParse(source)));
+            return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> {
+                assertEquals(expected, formatter.tryParse(source));
+                assertEquals(expected, formatter.tryParse("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(expected, formatter.tryParse("z" + source + "z", 1, 1 + source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParse(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParse(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParse(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParse(source, 0, -1));
+            });
         }
 
         @TestFactory
         public DynamicTest[] testParseToBytes() {
             IPAddressFormatter<IPv6Address> formatter = IPAddressFormatter.ipv6WithDefaults();
             return new DynamicTest[] {
-                    dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> formatter.parseToBytes(null))),
+                    dynamicTest("null", () -> {
+                        assertThrows(NullPointerException.class, () -> formatter.parseToBytes(null));
+                        assertThrows(NullPointerException.class, () -> formatter.parseToBytes(null, 0, 0));
+                    }),
                     testParseToBytesInvalid(formatter, "", 0),
 
                     testParseToBytes(formatter, "::1", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, }),
@@ -1585,13 +1691,29 @@ public class IPAddressFormatterTest {
         }
 
         private DynamicTest testParseToBytes(IPAddressFormatter<IPv6Address> formatter, String source, byte[] expected) {
-            return dynamicTest(source, () -> assertArrayEquals(expected, formatter.parseToBytes(source)));
+            return dynamicTest(source, () -> {
+                assertArrayEquals(expected, formatter.parseToBytes(source));
+                assertArrayEquals(expected, formatter.parseToBytes("1" + source + "1", 1, 1 + source.length()));
+                assertArrayEquals(expected, formatter.parseToBytes("z" + source + "z", 1, 1 + source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parseToBytes(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parseToBytes(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parseToBytes(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parseToBytes(source, 0, -1));
+            });
         }
 
         private DynamicTest testParseToBytesInvalid(IPAddressFormatter<IPv6Address> formatter, String source, int errorIndex) {
             return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                 ParseException exception = assertThrows(ParseException.class, () -> formatter.parseToBytes(source));
                 assertEquals(errorIndex, exception.getErrorOffset());
+
+                exception = assertThrows(ParseException.class, () -> formatter.parseToBytes("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(errorIndex + 1, exception.getErrorOffset());
+
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, 0, -1));
             });
         }
 
@@ -1866,7 +1988,10 @@ public class IPAddressFormatterTest {
         public DynamicTest[] testTryParseToBytes() {
             IPAddressFormatter<IPv6Address> formatter = IPAddressFormatter.ipv6WithDefaults();
             return new DynamicTest[] {
-                    testTryParseToBytesEmptyOptional(formatter, null),
+                    dynamicTest("null", () -> {
+                        assertEquals(Optional.empty(), formatter.tryParseToBytes(null));
+                        assertEquals(Optional.empty(), formatter.tryParseToBytes(null, 0, 0));
+                    }),
                     testTryParseToBytesEmptyOptional(formatter, ""),
 
                     testTryParseToBytes(formatter, "::1", new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, }),
@@ -2070,20 +2195,35 @@ public class IPAddressFormatterTest {
         }
 
         private DynamicTest testTryParseToBytes(IPAddressFormatter<IPv6Address> formatter, String source, byte[] expected) {
-            return dynamicTest(source, () -> assertArrayEquals(expected, formatter.tryParseToBytes(source).get()));
+            return dynamicTest(source, () -> {
+                assertArrayEquals(expected, formatter.tryParseToBytes(source).get());
+                assertArrayEquals(expected, formatter.tryParseToBytes("1" + source + "1", 1, 1 + source.length()).get());
+                assertArrayEquals(expected, formatter.tryParseToBytes("z" + source + "z", 1, 1 + source.length()).get());
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, 0, -1));
+            });
         }
 
         private DynamicTest testTryParseToBytesEmptyOptional(IPAddressFormatter<IPv6Address> formatter, String source) {
             String displayName = String.valueOf(source);
-            return dynamicTest(displayName.isEmpty() ? "empty" : displayName,
-                    () -> assertEquals(Optional.empty(), formatter.tryParseToBytes(source)));
+            return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> {
+                assertEquals(Optional.empty(), formatter.tryParseToBytes(source));
+                assertEquals(Optional.empty(), formatter.tryParseToBytes("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(Optional.empty(), formatter.tryParseToBytes("z" + source + "z", 1, 1 + source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, 0, -1));
+            });
         }
 
         @TestFactory
         public DynamicTest[] testIsValid() {
             IPAddressFormatter<IPv6Address> formatter = IPAddressFormatter.ipv6WithDefaults();
             return new DynamicTest[] {
-                    testIsValid(formatter, null, false),
+                    dynamicTest("null", () -> assertEquals(false, formatter.isValid(null, 0, 0))),
                     testIsValid(formatter, "", false),
 
                     testIsValid(formatter, "::1", true),
@@ -2175,7 +2315,15 @@ public class IPAddressFormatterTest {
 
         private DynamicTest testIsValid(IPAddressFormatter<IPv6Address> formatter, String source, boolean expected) {
             String displayName = String.valueOf(source);
-            return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> assertEquals(expected, formatter.isValid(source)));
+            return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> {
+                assertEquals(expected, formatter.isValid(source, 0, source.length()));
+                assertEquals(expected, formatter.isValid("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(expected, formatter.isValid("z" + source + "z", 1, 1 + source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.isValid(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.isValid(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.isValid(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.isValid(source, 0, -1));
+            });
         }
 
         @TestFactory
@@ -2726,7 +2874,10 @@ public class IPAddressFormatterTest {
         public DynamicTest[] testParse() {
             IPAddressFormatter<IPAddress<?>> formatter = IPAddressFormatter.anyVersionWithDefaults();
             return new DynamicTest[] {
-                    dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> formatter.parse(null))),
+                    dynamicTest("null", () -> {
+                        assertThrows(NullPointerException.class, () -> formatter.parse(null));
+                        assertThrows(NullPointerException.class, () -> formatter.parse(null, 0, 0));
+                    }),
                     testParseInvalid(formatter, "", 0),
 
                     testParse(formatter, "127.0.0.1", IPv4Address.LOCALHOST),
@@ -2833,13 +2984,29 @@ public class IPAddressFormatterTest {
         }
 
         private DynamicTest testParse(IPAddressFormatter<IPAddress<?>> formatter, String source, IPAddress<?> expected) {
-            return dynamicTest(source, () -> assertEquals(expected, formatter.parse(source)));
+            return dynamicTest(source, () -> {
+                assertEquals(expected, formatter.parse(source));
+                assertEquals(expected, formatter.parse("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(expected, formatter.parse("z" + source + "z", 1, 1 + source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, 0, -1));
+            });
         }
 
         private DynamicTest testParseInvalid(IPAddressFormatter<IPAddress<?>> formatter, String source, int errorIndex) {
             return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                 ParseException exception = assertThrows(ParseException.class, () -> formatter.parse(source));
                 assertEquals(errorIndex, exception.getErrorOffset());
+
+                exception = assertThrows(ParseException.class, () -> formatter.parse("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(errorIndex + 1, exception.getErrorOffset());
+
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parse(source, 0, -1));
             });
         }
 
@@ -3018,7 +3185,10 @@ public class IPAddressFormatterTest {
         public DynamicTest[] testTryParse() {
             IPAddressFormatter<IPAddress<?>> formatter = IPAddressFormatter.anyVersionWithDefaults();
             return new DynamicTest[] {
-                    testTryParse(formatter, null, Optional.empty()),
+                    dynamicTest("null", () -> {
+                        assertEquals(Optional.empty(), formatter.tryParse(null));
+                        assertEquals(Optional.empty(), formatter.tryParse(null, 0, 0));
+                    }),
                     testTryParse(formatter, "", Optional.empty()),
 
                     testTryParse(formatter, "127.0.0.1", Optional.of(IPv4Address.LOCALHOST)),
@@ -3133,14 +3303,25 @@ public class IPAddressFormatterTest {
 
         private DynamicTest testTryParse(IPAddressFormatter<IPAddress<?>> formatter, String source, Optional<IPAddress<?>> expected) {
             String displayName = String.valueOf(source);
-            return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> assertEquals(expected, formatter.tryParse(source)));
+            return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> {
+                assertEquals(expected, formatter.tryParse(source));
+                assertEquals(expected, formatter.tryParse("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(expected, formatter.tryParse("z" + source + "z", 1, 1 + source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParse(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParse(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParse(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParse(source, 0, -1));
+            });
         }
 
         @TestFactory
         public DynamicTest[] testParseToBytes() {
             IPAddressFormatter<IPAddress<?>> formatter = IPAddressFormatter.anyVersionWithDefaults();
             return new DynamicTest[] {
-                    dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> formatter.parseToBytes(null))),
+                    dynamicTest("null", () -> {
+                        assertThrows(NullPointerException.class, () -> formatter.parseToBytes(null));
+                        assertThrows(NullPointerException.class, () -> formatter.parseToBytes(null, 0, 0));
+                    }),
                     testParseToBytesInvalid(formatter, "", 0),
 
                     testParseToBytes(formatter, "127.0.0.1", new byte[] { 127, 0, 0, 1, }),
@@ -3360,13 +3541,29 @@ public class IPAddressFormatterTest {
         }
 
         private DynamicTest testParseToBytes(IPAddressFormatter<IPAddress<?>> formatter, String source, byte[] expected) {
-            return dynamicTest(source, () -> assertArrayEquals(expected, formatter.parseToBytes(source)));
+            return dynamicTest(source, () -> {
+                assertArrayEquals(expected, formatter.parseToBytes(source));
+                assertArrayEquals(expected, formatter.parseToBytes("1" + source + "1", 1, 1 + source.length()));
+                assertArrayEquals(expected, formatter.parseToBytes("z" + source + "z", 1, 1 + source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parseToBytes(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parseToBytes(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parseToBytes(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parseToBytes(source, 0, -1));
+            });
         }
 
         private DynamicTest testParseToBytesInvalid(IPAddressFormatter<IPAddress<?>> formatter, String source, int errorIndex) {
             return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                 ParseException exception = assertThrows(ParseException.class, () -> formatter.parseToBytes(source));
                 assertEquals(errorIndex, exception.getErrorOffset());
+
+                exception = assertThrows(ParseException.class, () -> formatter.parseToBytes("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(errorIndex + 1, exception.getErrorOffset());
+
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parseToBytes(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parseToBytes(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parseToBytes(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.parseToBytes(source, 0, -1));
             });
         }
 
@@ -3657,7 +3854,10 @@ public class IPAddressFormatterTest {
         public DynamicTest[] testTryParseToBytes() {
             IPAddressFormatter<IPAddress<?>> formatter = IPAddressFormatter.anyVersionWithDefaults();
             return new DynamicTest[] {
-                    testTryParseToBytesEmptyOptional(formatter, null),
+                    dynamicTest("null", () -> {
+                        assertEquals(Optional.empty(), formatter.tryParseToBytes(null));
+                        assertEquals(Optional.empty(), formatter.tryParseToBytes(null, 0, 0));
+                    }),
                     testTryParseToBytesEmptyOptional(formatter, ""),
 
                     testTryParseToBytes(formatter, "127.0.0.1", new byte[] { 127, 0, 0, 1, }),
@@ -3877,20 +4077,35 @@ public class IPAddressFormatterTest {
         }
 
         private DynamicTest testTryParseToBytes(IPAddressFormatter<IPAddress<?>> formatter, String source, byte[] expected) {
-            return dynamicTest(source, () -> assertArrayEquals(expected, formatter.tryParseToBytes(source).get()));
+            return dynamicTest(source, () -> {
+                assertArrayEquals(expected, formatter.tryParseToBytes(source).get());
+                assertArrayEquals(expected, formatter.tryParseToBytes("1" + source + "1", 1, 1 + source.length()).get());
+                assertArrayEquals(expected, formatter.tryParseToBytes("z" + source + "z", 1, 1 + source.length()).get());
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, 0, -1));
+            });
         }
 
         private DynamicTest testTryParseToBytesEmptyOptional(IPAddressFormatter<IPAddress<?>> formatter, String source) {
             String displayName = String.valueOf(source);
-            return dynamicTest(displayName.isEmpty() ? "empty" : displayName,
-                    () -> assertEquals(Optional.empty(), formatter.tryParseToBytes(source)));
+            return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> {
+                assertEquals(Optional.empty(), formatter.tryParseToBytes(source));
+                assertEquals(Optional.empty(), formatter.tryParseToBytes("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(Optional.empty(), formatter.tryParseToBytes("z" + source + "z", 1, 1 + source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.tryParseToBytes(source, 0, -1));
+            });
         }
 
         @TestFactory
         public DynamicTest[] testIsValid() {
             IPAddressFormatter<IPAddress<?>> formatter = IPAddressFormatter.anyVersionWithDefaults();
             return new DynamicTest[] {
-                    testIsValid(formatter, null, false),
+                    dynamicTest("null", () -> assertEquals(false, formatter.isValid(null, 0, 0))),
                     testIsValid(formatter, "", false),
 
                     testIsValid(formatter, "127.0.0.1", true),
@@ -3998,7 +4213,15 @@ public class IPAddressFormatterTest {
 
         private DynamicTest testIsValid(IPAddressFormatter<IPAddress<?>> formatter, String source, boolean expected) {
             String displayName = String.valueOf(source);
-            return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> assertEquals(expected, formatter.isValid(source)));
+            return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> {
+                assertEquals(expected, formatter.isValid(source, 0, source.length()));
+                assertEquals(expected, formatter.isValid("1" + source + "1", 1, 1 + source.length()));
+                assertEquals(expected, formatter.isValid("z" + source + "z", 1, 1 + source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.isValid(source, -1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.isValid(source, 0, source.length() + 1));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.isValid(source, source.length() + 1, source.length()));
+                assertThrows(IndexOutOfBoundsException.class, () -> formatter.isValid(source, 0, -1));
+            });
         }
 
         @TestFactory
