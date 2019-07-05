@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 import java.util.Optional;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.TestFactory;
 public class SubnetTest {
 
     @Test
+    @DisplayName("from and to")
     public void testFromAndTo() {
         IPv4Address from = IPv4Address.valueOf(192, 168, 0, 0);
         IPv4Address to = IPv4Address.valueOf(192, 168, 255, 255);
@@ -45,6 +47,7 @@ public class SubnetTest {
     }
 
     @Test
+    @DisplayName("routingPrefix and prefixLength")
     public void testRoutingPrefixAndPrefixLength() {
         IPv4Address from = IPv4Address.valueOf(192, 168, 0, 0);
         IPv4Address to = IPv4Address.valueOf(192, 168, 255, 255);
@@ -60,6 +63,7 @@ public class SubnetTest {
     }
 
     @Test
+    @DisplayName("toString")
     public void testToString() {
         IPv4Address address = IPv4Address.LOCALHOST;
         Subnet<?> subnet = new TestSubnet(address);
@@ -69,6 +73,7 @@ public class SubnetTest {
     }
 
     @TestFactory
+    @DisplayName("valueOf(CharSequence) and valueOf(CharSequence, int, int)")
     public DynamicTest[] testValueOfCIDRNotation() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> {
@@ -180,6 +185,7 @@ public class SubnetTest {
     }
 
     @TestFactory
+    @DisplayName("tryValueOf")
     public DynamicTest[] testTryValueOf() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> {
@@ -248,6 +254,7 @@ public class SubnetTest {
     }
 
     @TestFactory
+    @DisplayName("valueOf(CharSequence, int) and valueOf(IPAddress, int)")
     public DynamicTest[] testValueOfWithIPAddress() {
         CharSequence address = "192.168.171.13";
         return new DynamicTest[] {
@@ -294,6 +301,7 @@ public class SubnetTest {
     }
 
     @TestFactory
+    @DisplayName("isSubnet")
     public DynamicTest[] testIsSubnet() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> {

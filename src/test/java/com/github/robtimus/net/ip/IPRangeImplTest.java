@@ -19,6 +19,7 @@ package com.github.robtimus.net.ip;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -29,6 +30,7 @@ public class IPRangeImplTest {
     public class IPv4 {
 
         @Test
+        @DisplayName("from and to")
         public void testFromAndTo() {
             IPv4Address from = IPv4Address.valueOf(0x12345678);
             IPv4Address to = IPv4Address.valueOf(0x87654321);
@@ -38,6 +40,7 @@ public class IPRangeImplTest {
         }
 
         @Test
+        @DisplayName("toString")
         public void testToString() {
             IPv4Address from = IPv4Address.valueOf(12, 34, 56, 78);
             IPv4Address to = IPv4Address.valueOf(87, 65, 43, 21);
@@ -52,6 +55,7 @@ public class IPRangeImplTest {
     public class IPv6 {
 
         @Test
+        @DisplayName("from and to")
         public void testFromAndTo() {
             IPv6Address from = IPv6Address.valueOf(0x12345678, 0x12345678);
             IPv6Address to = IPv6Address.valueOf(0x87654321, 0x87654321);
@@ -61,6 +65,7 @@ public class IPRangeImplTest {
         }
 
         @Test
+        @DisplayName("toString")
         public void testToString() {
             IPv6Address from = IPv6Address.valueOf(0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF);
             IPv6Address to = IPv6Address.valueOf(0xEF, 0xCD, 0xAB, 0x90, 0x78, 0x56, 0x34, 0x12);

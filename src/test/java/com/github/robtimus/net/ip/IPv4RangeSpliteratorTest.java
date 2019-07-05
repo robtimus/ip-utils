@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 import java.util.Spliterator;
 import java.util.function.Consumer;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.TestFactory;
 public class IPv4RangeSpliteratorTest {
 
     @Test
+    @DisplayName("trySplit")
     public void testTrySplit() {
         IPv4RangeSpliterator spliterator = new IPv4RangeSpliterator(IPv4Address.MIN_VALUE, IPv4Address.MAX_VALUE);
 
@@ -78,6 +80,7 @@ public class IPv4RangeSpliteratorTest {
     }
 
     @TestFactory
+    @DisplayName("estimateSize")
     public DynamicTest[] testEstimateSize() {
         return new DynamicTest[] {
                 testEstimateSize(IPv4Address.MIN_VALUE, IPv4Address.MAX_VALUE, spliterator -> {
@@ -110,6 +113,7 @@ public class IPv4RangeSpliteratorTest {
     }
 
     @Test
+    @DisplayName("characteristics")
     public void testCharacteristics() {
         IPv4RangeSpliterator spliterator = new IPv4RangeSpliterator(IPv4Address.MIN_VALUE, IPv4Address.MAX_VALUE);
         assertTrue(spliterator.hasCharacteristics(Spliterator.ORDERED));

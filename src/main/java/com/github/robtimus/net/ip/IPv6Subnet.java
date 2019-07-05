@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.Spliterator;
 
 /**
- * Represents a subnet of IPv6 addresses.
+ * Represents a subnet of IPv6 addresses. Immutable.
  *
  * @author Rob Spoor
  */

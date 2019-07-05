@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -30,6 +31,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import java.net.Inet6Address;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,57 +40,65 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @SuppressWarnings({ "javadoc", "nls" })
 public class IPv6AddressTest {
 
     @Test
+    @DisplayName("bits")
     public void testBits() {
         assertEquals(128, IPv6Address.LOCALHOST.bits());
     }
 
-    @TestFactory
-    public DynamicTest[] testToByteArray() {
-        return new DynamicTest[] {
-                testToByteArray(IPv6Address.LOCALHOST, new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }),
-                testToByteArray(IPv6Address.MIN_VALUE, new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }),
-                testToByteArray(IPv6Address.MAX_VALUE, new byte[] {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource
+    @DisplayName("toByteArray")
+    public void testToByteArray(IPv6Address address, byte[] expected) {
+        assertArrayEquals(expected, address.toByteArray());
+    }
+
+    static Arguments[] testToByteArray() {
+        return new Arguments[] {
+                arguments(IPv6Address.LOCALHOST, new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }),
+                arguments(IPv6Address.MIN_VALUE, new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }),
+                arguments(IPv6Address.MAX_VALUE, new byte[] {
                         (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255,
                         (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255
                 }),
-                testToByteArray(IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), new byte[] {
+                arguments(IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), new byte[] {
                         0x12, 0x34, 0x56, 0x78, (byte) 0x90, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF,
                         0x34, 0x56, 0x78, (byte) 0x90, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF, 0x12
                 }),
         };
     }
 
-    private DynamicTest testToByteArray(IPv6Address address, byte[] expected) {
-        return dynamicTest(address.toString(), () -> assertArrayEquals(expected, address.toByteArray()));
+    @ParameterizedTest(name = "{0}")
+    @MethodSource
+    @DisplayName("toInetAddress")
+    public void testToInetAddress(IPv6Address address, String expected) throws UnknownHostException {
+        assertEquals(InetAddress.getByName(expected), address.toInetAddress());
+        // test caching
+        assertSame(address.toInetAddress(), address.toInetAddress());
     }
 
-    @TestFactory
-    public DynamicTest[] testToInetAddress() {
-        return new DynamicTest[] {
-                testToInetAddress(IPv6Address.LOCALHOST, "::1"),
-                testToInetAddress(IPv6Address.MIN_VALUE, "::"),
-                testToInetAddress(IPv6Address.MAX_VALUE, "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"),
-                testToInetAddress(IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0, 0, 0, 0, 0xCDEF), "1234:5678:90ab::cdef"),
+    static Arguments[] testToInetAddress() {
+        return new Arguments[] {
+                arguments(IPv6Address.LOCALHOST, "::1"),
+                arguments(IPv6Address.MIN_VALUE, "::"),
+                arguments(IPv6Address.MAX_VALUE, "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"),
+                arguments(IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0, 0, 0, 0, 0xCDEF), "1234:5678:90ab::cdef"),
         };
     }
 
-    private DynamicTest testToInetAddress(IPv6Address address, String expected) {
-        return dynamicTest(address.toString(), () -> {
-            assertEquals(InetAddress.getByName(expected), address.toInetAddress());
-            // test caching
-            assertSame(address.toInetAddress(), address.toInetAddress());
-        });
-    }
-
     @TestFactory
+    @DisplayName("toIPv4")
     public DynamicTest[] testToIPv4() {
         return new DynamicTest[] {
                 testToIPv4NotMapped(IPv6Address.LOCALHOST),
@@ -118,78 +128,83 @@ public class IPv6AddressTest {
 
     // isIPv4Mapped is tested with toIPv4
 
-    @TestFactory
-    public DynamicTest[] testEquals() {
-        IPv6Address address = IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12);
-        return new DynamicTest[] {
-                testEquals(address, null, false),
-                testEquals(address, "foo", false),
-                testEquals(address, IPv4Address.valueOf(12, 34, 56, 78), false),
-                testEquals(address, address, true),
-                testEquals(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), true),
-                testEquals(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0), false),
-                testEquals(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0, 0xEF12), false),
-                testEquals(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0, 0xABCD, 0xEF12), false),
-                testEquals(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0, 0x7890, 0xABCD, 0xEF12), false),
-                testEquals(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0, 0x3456, 0x7890, 0xABCD, 0xEF12), false),
-                testEquals(address, IPv6Address.valueOf(0x1234, 0x5678, 0, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), false),
-                testEquals(address, IPv6Address.valueOf(0x1234, 0, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), false),
-                testEquals(address, IPv6Address.valueOf(0, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), false),
-        };
-    }
-
-    private DynamicTest testEquals(IPv6Address address, Object object, boolean expectEquals) {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource
+    @DisplayName("equals")
+    public void testEquals(IPv6Address address, Object object, boolean expectEquals) {
         BiConsumer<Object, Object> equalsCheck = expectEquals ? Assertions::assertEquals : Assertions::assertNotEquals;
-        return dynamicTest(String.valueOf(object), () -> equalsCheck.accept(address, object));
+        equalsCheck.accept(address, object);
     }
 
-    @TestFactory
-    public DynamicTest[] testHashCode() {
+    static Arguments[] testEquals() {
         IPv6Address address = IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12);
-        return new DynamicTest[] {
-                testHashCode(address, address, true),
-                testHashCode(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), true),
-                testHashCode(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0), false),
-                testHashCode(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0, 0xEF12), false),
-                testHashCode(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0, 0xABCD, 0xEF12), false),
-                testHashCode(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0, 0x7890, 0xABCD, 0xEF12), false),
-                testHashCode(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0, 0x3456, 0x7890, 0xABCD, 0xEF12), false),
-                testHashCode(address, IPv6Address.valueOf(0x1234, 0x5678, 0, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), false),
-                testHashCode(address, IPv6Address.valueOf(0x1234, 0, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), false),
-                testHashCode(address, IPv6Address.valueOf(0, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), false),
+        return new Arguments[] {
+                arguments(address, null, false),
+                arguments(address, "foo", false),
+                arguments(address, IPv4Address.valueOf(12, 34, 56, 78), false),
+                arguments(address, address, true),
+                arguments(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), true),
+                arguments(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0), false),
+                arguments(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0, 0xEF12), false),
+                arguments(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0, 0xABCD, 0xEF12), false),
+                arguments(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0, 0x7890, 0xABCD, 0xEF12), false),
+                arguments(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0, 0x3456, 0x7890, 0xABCD, 0xEF12), false),
+                arguments(address, IPv6Address.valueOf(0x1234, 0x5678, 0, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), false),
+                arguments(address, IPv6Address.valueOf(0x1234, 0, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), false),
+                arguments(address, IPv6Address.valueOf(0, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), false),
         };
     }
 
-    private DynamicTest testHashCode(IPv6Address address, IPv6Address other, boolean expectEquals) {
+    @ParameterizedTest(name = "{1}")
+    @MethodSource
+    @DisplayName("hashCode")
+    public void testHashCode(IPv6Address address, IPv6Address other, boolean expectEquals) {
         BiConsumer<Integer, Integer> equalsCheck = expectEquals ? Assertions::assertEquals : Assertions::assertNotEquals;
-        return dynamicTest(other.toString(), () -> equalsCheck.accept(address.hashCode(), other.hashCode()));
+        equalsCheck.accept(address.hashCode(), other.hashCode());
     }
 
-    @TestFactory
-    public DynamicTest[] testToString() {
-        return new DynamicTest[] {
-                testToString(IPv6Address.LOCALHOST, "::1"),
-                testToString(IPv6Address.MIN_VALUE, "::"),
-                testToString(IPv6Address.MAX_VALUE, "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"),
-                testToString(IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12),
-                        "1234:5678:90ab:cdef:3456:7890:abcd:ef12"),
-                testToString(IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0, 0, 0, 0, 0xCDEF), "1234:5678:90ab::cdef"),
-                testToString(IPv6Address.valueOf(1, 0, 0, 0, 0, 0, 0, 0), "1::"),
-                testToString(IPv6Address.valueOf(1, 0, 0, 0, 0, 0, 0, 1), "1::1"),
-                testToString(IPv6Address.valueOf(1, 0, 0, 1, 0, 0, 0, 1), "1:0:0:1::1"),
-                testToString(IPv6Address.valueOf(1, 0, 0, 0, 1, 0, 0, 1), "1::1:0:0:1"),
+    static Arguments[] testHashCode() {
+        IPv6Address address = IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12);
+        return new Arguments[] {
+                arguments(address, address, true),
+                arguments(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), true),
+                arguments(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0), false),
+                arguments(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0, 0xEF12), false),
+                arguments(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0, 0xABCD, 0xEF12), false),
+                arguments(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0, 0x7890, 0xABCD, 0xEF12), false),
+                arguments(address, IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0, 0x3456, 0x7890, 0xABCD, 0xEF12), false),
+                arguments(address, IPv6Address.valueOf(0x1234, 0x5678, 0, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), false),
+                arguments(address, IPv6Address.valueOf(0x1234, 0, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), false),
+                arguments(address, IPv6Address.valueOf(0, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), false),
         };
     }
 
-    private DynamicTest testToString(IPv6Address address, String expected) {
-        return dynamicTest(address.toString(), () -> {
-            assertEquals(expected, address.toString());
-            // test caching
-            assertSame(address.toString(), address.toString());
-        });
+    @ParameterizedTest(name = "{0}")
+    @MethodSource
+    @DisplayName("toString")
+    public void testToString(IPv6Address address, String expected) {
+        assertEquals(expected, address.toString());
+        // test caching
+        assertSame(address.toString(), address.toString());
+    }
+
+    static Arguments[] testToString() {
+        return new Arguments[] {
+                arguments(IPv6Address.LOCALHOST, "::1"),
+                arguments(IPv6Address.MIN_VALUE, "::"),
+                arguments(IPv6Address.MAX_VALUE, "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"),
+                arguments(IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12),
+                        "1234:5678:90ab:cdef:3456:7890:abcd:ef12"),
+                arguments(IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0, 0, 0, 0, 0xCDEF), "1234:5678:90ab::cdef"),
+                arguments(IPv6Address.valueOf(1, 0, 0, 0, 0, 0, 0, 0), "1::"),
+                arguments(IPv6Address.valueOf(1, 0, 0, 0, 0, 0, 0, 1), "1::1"),
+                arguments(IPv6Address.valueOf(1, 0, 0, 1, 0, 0, 0, 1), "1:0:0:1::1"),
+                arguments(IPv6Address.valueOf(1, 0, 0, 0, 1, 0, 0, 1), "1::1:0:0:1"),
+        };
     }
 
     @TestFactory
+    @DisplayName("compareTo")
     public DynamicTest[] testCompareTo() {
         IPv6Address address = IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12);
         return new DynamicTest[] {
@@ -229,99 +244,112 @@ public class IPv6AddressTest {
         return dynamicTest(other.toString(), () -> assertTrue(address.compareTo(other) > 0));
     }
 
-    @TestFactory
-    public DynamicTest[] testIsMulticastAddress() {
-        return new DynamicTest[] {
-                testIsMulticastAddress(IPv6Address.LOCALHOST, false),
-                testIsMulticastAddress(IPv6Address.MIN_VALUE, false),
-                testIsMulticastAddress(IPv6Address.MAX_VALUE, true),
-                testIsMulticastAddress(IPv6Address.valueOf(0xFEFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF), false),
-                testIsMulticastAddress(IPv6Address.valueOf(0xFF00, 0, 0, 0, 0, 0, 0, 0), true),
-                testIsMulticastAddress(IPv6Address.valueOf(0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF), true),
+    @ParameterizedTest(name = "{0}")
+    @MethodSource
+    @DisplayName("isMulticastAddress")
+    public void testIsMulticastAddress(IPv6Address address, boolean expected) {
+        assertEquals(expected, address.isMulticastAddress());
+    }
+
+    static Arguments[] testIsMulticastAddress() {
+        return new Arguments[] {
+                arguments(IPv6Address.LOCALHOST, false),
+                arguments(IPv6Address.MIN_VALUE, false),
+                arguments(IPv6Address.MAX_VALUE, true),
+                arguments(IPv6Address.valueOf(0xFEFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF), false),
+                arguments(IPv6Address.valueOf(0xFF00, 0, 0, 0, 0, 0, 0, 0), true),
+                arguments(IPv6Address.valueOf(0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF), true),
         };
     }
 
-    private DynamicTest testIsMulticastAddress(IPv6Address address, boolean expected) {
-        return dynamicTest(address.toString(), () -> assertEquals(expected, address.isMulticastAddress()));
+    @ParameterizedTest(name = "{0}")
+    @MethodSource
+    @DisplayName("isWildcardAddress")
+    public void testIsWildcardAddress(IPv6Address address, boolean expected) {
+        assertEquals(expected, address.isWildcardAddress());
     }
 
-    @TestFactory
-    public DynamicTest[] testIsWildcardAddress() {
-        return new DynamicTest[] {
-                testIsWildcardAddress(IPv6Address.LOCALHOST, false),
-                testIsWildcardAddress(IPv6Address.MIN_VALUE, true),
-                testIsWildcardAddress(IPv6Address.MAX_VALUE, false),
-                testIsWildcardAddress(IPv6Address.valueOf(0, 0, 0, 0, 0, 0, 0, 1), false),
+    static Arguments[] testIsWildcardAddress() {
+        return new Arguments[] {
+                arguments(IPv6Address.LOCALHOST, false),
+                arguments(IPv6Address.MIN_VALUE, true),
+                arguments(IPv6Address.MAX_VALUE, false),
+                arguments(IPv6Address.valueOf(0, 0, 0, 0, 0, 0, 0, 1), false),
         };
     }
 
-    private DynamicTest testIsWildcardAddress(IPv6Address address, boolean expected) {
-        return dynamicTest(address.toString(), () -> assertEquals(expected, address.isWildcardAddress()));
+    @ParameterizedTest(name = "{0}")
+    @MethodSource
+    @DisplayName("isLoopbackAddress")
+    public void testIsLoopbackAddress(IPv6Address address, boolean expected) {
+        assertEquals(expected, address.isLoopbackAddress());
     }
 
-    @TestFactory
-    public DynamicTest[] testIsLoopbackAddress() {
-        return new DynamicTest[] {
-                testIsLoopbackAddress(IPv6Address.LOCALHOST, true),
-                testIsLoopbackAddress(IPv6Address.MIN_VALUE, false),
-                testIsLoopbackAddress(IPv6Address.MAX_VALUE, false),
-                testIsLoopbackAddress(IPv6Address.valueOf(0, 0, 0, 0, 0, 0, 0, 2), false),
+    static Arguments[] testIsLoopbackAddress() {
+        return new Arguments[] {
+                arguments(IPv6Address.LOCALHOST, true),
+                arguments(IPv6Address.MIN_VALUE, false),
+                arguments(IPv6Address.MAX_VALUE, false),
+                arguments(IPv6Address.valueOf(0, 0, 0, 0, 0, 0, 0, 2), false),
         };
     }
 
-    private DynamicTest testIsLoopbackAddress(IPv6Address address, boolean expected) {
-        return dynamicTest(address.toString(), () -> assertEquals(expected, address.isLoopbackAddress()));
+    @ParameterizedTest(name = "{0}")
+    @MethodSource
+    @DisplayName("isLinkLocalAddress")
+    public void testIsLinkLocalAddress(IPv6Address address, boolean expected) {
+        assertEquals(expected, address.isLinkLocalAddress());
     }
 
-    @TestFactory
-    public DynamicTest[] testIsLinkLocalAddress() {
-        return new DynamicTest[] {
-                testIsLinkLocalAddress(IPv6Address.LOCALHOST, false),
-                testIsLinkLocalAddress(IPv6Address.MIN_VALUE, false),
-                testIsLinkLocalAddress(IPv6Address.MAX_VALUE, false),
-                testIsLinkLocalAddress(IPv6Address.valueOf(0xFE7F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF), false),
-                testIsLinkLocalAddress(IPv6Address.valueOf(0xFE80, 0, 0, 0, 0, 0, 0, 0), true),
-                testIsLinkLocalAddress(IPv6Address.valueOf(0xFEBF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF , 0xFFFF, 0xFFFF), true),
-                testIsLinkLocalAddress(IPv6Address.valueOf(0xFEC0, 0, 0, 0, 0, 0, 0, 0), false),
+    static Arguments[] testIsLinkLocalAddress() {
+        return new Arguments[] {
+                arguments(IPv6Address.LOCALHOST, false),
+                arguments(IPv6Address.MIN_VALUE, false),
+                arguments(IPv6Address.MAX_VALUE, false),
+                arguments(IPv6Address.valueOf(0xFE7F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF), false),
+                arguments(IPv6Address.valueOf(0xFE80, 0, 0, 0, 0, 0, 0, 0), true),
+                arguments(IPv6Address.valueOf(0xFEBF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF , 0xFFFF, 0xFFFF), true),
+                arguments(IPv6Address.valueOf(0xFEC0, 0, 0, 0, 0, 0, 0, 0), false),
         };
     }
 
-    private DynamicTest testIsLinkLocalAddress(IPv6Address address, boolean expected) {
-        return dynamicTest(address.toString(), () -> assertEquals(expected, address.isLinkLocalAddress()));
+    @ParameterizedTest(name = "{0}")
+    @MethodSource
+    @DisplayName("isSiteLocalAddress")
+    public void testIsSiteLocalAddress(IPv6Address address, boolean expected) {
+        assertEquals(expected, address.isSiteLocalAddress());
     }
 
-    @TestFactory
-    public DynamicTest[] testIsSiteLocalAddress() {
-        return new DynamicTest[] {
-                testIsSiteLocalAddress(IPv6Address.LOCALHOST, false),
-                testIsSiteLocalAddress(IPv6Address.MIN_VALUE, false),
-                testIsSiteLocalAddress(IPv6Address.MAX_VALUE, false),
-                testIsSiteLocalAddress(IPv6Address.valueOf(0xFEBF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF), false),
-                testIsSiteLocalAddress(IPv6Address.valueOf(0xFEC0, 0, 0, 0, 0, 0, 0, 0), true),
-                testIsSiteLocalAddress(IPv6Address.valueOf(0xFEFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF), true),
-                testIsSiteLocalAddress(IPv6Address.valueOf(0xFF00, 0, 0, 0, 0, 0, 0, 0), false),
+    static Arguments[] testIsSiteLocalAddress() {
+        return new Arguments[] {
+                arguments(IPv6Address.LOCALHOST, false),
+                arguments(IPv6Address.MIN_VALUE, false),
+                arguments(IPv6Address.MAX_VALUE, false),
+                arguments(IPv6Address.valueOf(0xFEBF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF), false),
+                arguments(IPv6Address.valueOf(0xFEC0, 0, 0, 0, 0, 0, 0, 0), true),
+                arguments(IPv6Address.valueOf(0xFEFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF), true),
+                arguments(IPv6Address.valueOf(0xFF00, 0, 0, 0, 0, 0, 0, 0), false),
         };
     }
 
-    private DynamicTest testIsSiteLocalAddress(IPv6Address address, boolean expected) {
-        return dynamicTest(address.toString(), () -> assertEquals(expected, address.isSiteLocalAddress()));
+    @ParameterizedTest(name = "{0}")
+    @MethodSource
+    @DisplayName("hasNext")
+    public void testHasNext(IPv6Address address, boolean expected) {
+        assertEquals(expected, address.hasNext());
     }
 
-    @TestFactory
-    public DynamicTest[] testHasNext() {
-        return new DynamicTest[] {
-                testHasNext(IPv6Address.LOCALHOST, true),
-                testHasNext(IPv6Address.MIN_VALUE, true),
-                testHasNext(IPv6Address.MAX_VALUE, false),
-                testHasNext(IPv6Address.valueOf(0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFE), true),
+    static Arguments[] testHasNext() {
+        return new Arguments[] {
+                arguments(IPv6Address.LOCALHOST, true),
+                arguments(IPv6Address.MIN_VALUE, true),
+                arguments(IPv6Address.MAX_VALUE, false),
+                arguments(IPv6Address.valueOf(0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFE), true),
         };
     }
 
-    private DynamicTest testHasNext(IPv6Address address, boolean expected) {
-        return dynamicTest(address.toString(), () -> assertEquals(expected, address.hasNext()));
-    }
-
     @TestFactory
+    @DisplayName("next")
     public DynamicTest[] testNext() {
         return new DynamicTest[] {
                 testNext(IPv6Address.LOCALHOST, IPv6Address.valueOf(0, 0, 0, 0, 0, 0, 0, 2)),
@@ -339,21 +367,24 @@ public class IPv6AddressTest {
         return dynamicTest(address.toString(), () -> assertEquals(expected, address.next()));
     }
 
-    @TestFactory
-    public DynamicTest[] testHasPrevious() {
-        return new DynamicTest[] {
-                testHasPrevious(IPv6Address.LOCALHOST, true),
-                testHasPrevious(IPv6Address.MIN_VALUE, false),
-                testHasPrevious(IPv6Address.MAX_VALUE, true),
-                testHasPrevious(IPv6Address.valueOf(0, 0, 0, 0, 0, 0, 0, 1), true),
+    @ParameterizedTest(name = "{0}")
+    @MethodSource
+    @DisplayName("hasPrevious")
+    public void testHasPrevious(IPv6Address address, boolean expected) {
+        assertEquals(expected, address.hasPrevious());
+    }
+
+    static Arguments[] testHasPrevious() {
+        return new Arguments[] {
+                arguments(IPv6Address.LOCALHOST, true),
+                arguments(IPv6Address.MIN_VALUE, false),
+                arguments(IPv6Address.MAX_VALUE, true),
+                arguments(IPv6Address.valueOf(0, 0, 0, 0, 0, 0, 0, 1), true),
         };
     }
 
-    private DynamicTest testHasPrevious(IPv6Address address, boolean expected) {
-        return dynamicTest(address.toString(), () -> assertEquals(expected, address.hasPrevious()));
-    }
-
     @TestFactory
+    @DisplayName("previous")
     public DynamicTest[] testPrevious() {
         return new DynamicTest[] {
                 testPrevious(IPv6Address.LOCALHOST, IPv6Address.valueOf(0, 0, 0, 0, 0, 0, 0, 0)),
@@ -371,32 +402,35 @@ public class IPv6AddressTest {
         return dynamicTest(address.toString(), () -> assertEquals(expected, address.previous()));
     }
 
-    @TestFactory
-    public DynamicTest[] testMid() {
-        return new DynamicTest[] {
-                testMid(IPv6Address.LOCALHOST, IPv6Address.LOCALHOST, IPv6Address.LOCALHOST),
-                testMid(IPv6Address.LOCALHOST, IPv6Address.LOCALHOST.next(), IPv6Address.LOCALHOST),
-                testMid(IPv6Address.LOCALHOST.next(), IPv6Address.LOCALHOST, IPv6Address.LOCALHOST),
-                testMid(IPv6Address.LOCALHOST.previous(), IPv6Address.LOCALHOST.next(), IPv6Address.LOCALHOST),
-                testMid(IPv6Address.MIN_VALUE, IPv6Address.MIN_VALUE, IPv6Address.MIN_VALUE),
-                testMid(IPv6Address.MIN_VALUE, IPv6Address.MIN_VALUE.next(), IPv6Address.MIN_VALUE),
-                testMid(IPv6Address.MAX_VALUE, IPv6Address.MAX_VALUE, IPv6Address.MAX_VALUE),
-                testMid(IPv6Address.MAX_VALUE.previous(), IPv6Address.MAX_VALUE, IPv6Address.MAX_VALUE.previous()),
-                testMid(IPv6Address.MIN_VALUE, IPv6Address.MAX_VALUE, IPv6Address.valueOf(Long.MAX_VALUE, IPv6Address.MAX_LOW_ADDRESS)),
-                testMid(IPv6Address.valueOf(Long.MAX_VALUE, 0), IPv6Address.valueOf(Long.MAX_VALUE, IPv6Address.MAX_LOW_ADDRESS),
+    @ParameterizedTest(name = "{0}.mid({1})")
+    @MethodSource
+    @DisplayName("mid")
+    public void testMid(IPv6Address low, IPv6Address high, IPv6Address expected) {
+        assertEquals(expected, low.mid(high));
+    }
+
+    static Arguments[] testMid() {
+        return new Arguments[] {
+                arguments(IPv6Address.LOCALHOST, IPv6Address.LOCALHOST, IPv6Address.LOCALHOST),
+                arguments(IPv6Address.LOCALHOST, IPv6Address.LOCALHOST.next(), IPv6Address.LOCALHOST),
+                arguments(IPv6Address.LOCALHOST.next(), IPv6Address.LOCALHOST, IPv6Address.LOCALHOST),
+                arguments(IPv6Address.LOCALHOST.previous(), IPv6Address.LOCALHOST.next(), IPv6Address.LOCALHOST),
+                arguments(IPv6Address.MIN_VALUE, IPv6Address.MIN_VALUE, IPv6Address.MIN_VALUE),
+                arguments(IPv6Address.MIN_VALUE, IPv6Address.MIN_VALUE.next(), IPv6Address.MIN_VALUE),
+                arguments(IPv6Address.MAX_VALUE, IPv6Address.MAX_VALUE, IPv6Address.MAX_VALUE),
+                arguments(IPv6Address.MAX_VALUE.previous(), IPv6Address.MAX_VALUE, IPv6Address.MAX_VALUE.previous()),
+                arguments(IPv6Address.MIN_VALUE, IPv6Address.MAX_VALUE, IPv6Address.valueOf(Long.MAX_VALUE, IPv6Address.MAX_LOW_ADDRESS)),
+                arguments(IPv6Address.valueOf(Long.MAX_VALUE, 0), IPv6Address.valueOf(Long.MAX_VALUE, IPv6Address.MAX_LOW_ADDRESS),
                         IPv6Address.valueOf(Long.MAX_VALUE, Long.MAX_VALUE)),
-                testMid(IPv6Address.valueOf(0, Integer.MAX_VALUE), IPv6Address.valueOf(IPv6Address.MAX_HIGH_ADDRESS, Integer.MAX_VALUE + 1L),
+                arguments(IPv6Address.valueOf(0, Integer.MAX_VALUE), IPv6Address.valueOf(IPv6Address.MAX_HIGH_ADDRESS, Integer.MAX_VALUE + 1L),
                         IPv6Address.valueOf(Long.MAX_VALUE, 0x8000_0000_7FFF_FFFFL)),
-                testMid(IPv6Address.valueOf(IPv6Address.MAX_HIGH_ADDRESS, Integer.MAX_VALUE + 1L), IPv6Address.valueOf(0, Integer.MAX_VALUE),
+                arguments(IPv6Address.valueOf(IPv6Address.MAX_HIGH_ADDRESS, Integer.MAX_VALUE + 1L), IPv6Address.valueOf(0, Integer.MAX_VALUE),
                         IPv6Address.valueOf(Long.MAX_VALUE, 0x8000_0000_7FFF_FFFFL)),
         };
     }
 
-    private DynamicTest testMid(IPv6Address low, IPv6Address high, IPv6Address expected) {
-        return dynamicTest(String.format("%s.mid(%s)", low, high), () -> assertEquals(expected, low.mid(high)));
-    }
-
     @TestFactory
+    @DisplayName("to")
     public DynamicTest[] testTo() {
         // Don't test the range itself, only its to and from values. The range has its own tests.
         return new DynamicTest[] {
@@ -421,6 +455,7 @@ public class IPv6AddressTest {
     }
 
     @Test
+    @DisplayName("asRange")
     public void testAsRange() {
         // Don't test the range itself, only its to and from values. The range has its own tests.
         IPv6Range range = IPv6Address.MIN_VALUE.asRange();
@@ -430,6 +465,7 @@ public class IPv6AddressTest {
     }
 
     @TestFactory
+    @DisplayName("inSubnet")
     public DynamicTest[] testInSubnet() {
         IPv6Address address = IPv6Address.valueOf(0x0012_0034_0056_0078L, 0x0090_00AB_00CD_00EFL);
         return new DynamicTest[] {
@@ -474,6 +510,7 @@ public class IPv6AddressTest {
     }
 
     @TestFactory
+    @DisplayName("startingSubnet")
     public DynamicTest[] testStartingSubnet() {
         IPv6Address address = IPv6Address.valueOf(0x0012_0034_0056_0078L, 0x0090_00AB_00CD_00EFL);
         return new DynamicTest[] {
@@ -536,6 +573,7 @@ public class IPv6AddressTest {
     }
 
     @TestFactory
+    @DisplayName("valueOf(int, int, int, int, int, int, int, int)")
     public DynamicTest[] testValueOfHextets() {
         return new DynamicTest[] {
                 testValueOfHextets(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12,
@@ -579,6 +617,7 @@ public class IPv6AddressTest {
     }
 
     @TestFactory
+    @DisplayName("valueOf(byte[])")
     public DynamicTest[] testValueOfByteArray() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> IPv6Address.valueOf((byte[]) null))),
@@ -610,9 +649,13 @@ public class IPv6AddressTest {
     }
 
     @TestFactory
+    @DisplayName("valueOf(CharSequence) and valueOf(CharSequence, int, int)")
     public DynamicTest[] testValueOfCharSequence() {
         return new DynamicTest[] {
-                dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> IPv6Address.valueOf((CharSequence) null))),
+                dynamicTest("null", () -> {
+                    assertThrows(NullPointerException.class, () -> IPv6Address.valueOf((CharSequence) null));
+                    assertThrows(NullPointerException.class, () -> IPv6Address.valueOf((CharSequence) null, 0, 0));
+                }),
                 testValueOfCharSequence("::1", IPv6Address.LOCALHOST),
                 testValueOfCharSequence("::", IPv6Address.MIN_VALUE),
                 testValueOfCharSequence("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", IPv6Address.MAX_VALUE),
@@ -627,17 +670,32 @@ public class IPv6AddressTest {
     }
 
     private DynamicTest testValueOfCharSequence(String address, IPv6Address expected) {
-        return dynamicTest(address, () -> assertEquals(expected, IPv6Address.valueOf(address)));
+        return dynamicTest(address, () -> {
+            assertEquals(expected, IPv6Address.valueOf(address));
+            assertEquals(expected, IPv6Address.valueOf("1" + address + "1", 1, 1 + address.length()));
+            assertEquals(expected, IPv6Address.valueOf("z" + address + "z", 1, 1 + address.length()));
+
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, -1, address.length()));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, 0, address.length() + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, address.length() + 1, address.length()));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, 0, -1));
+        });
     }
 
     private DynamicTest testValueOfInvalidCharSequence(String address) {
         return dynamicTest(address, () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv6Address.valueOf(address));
             assertEquals(Messages.IPAddress.invalidIPAddress.get(address), exception.getMessage());
+
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, -1, address.length()));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, 0, address.length() + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, address.length() + 1, address.length()));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, 0, -1));
         });
     }
 
     @TestFactory
+    @DisplayName("tryValueOf")
     public DynamicTest[] testTryValueOf() {
         return new DynamicTest[] {
                 testTryValueOf(null, Optional.empty()),
@@ -667,6 +725,7 @@ public class IPv6AddressTest {
     }
 
     @TestFactory
+    @DisplayName("valueOf(Inet6Address")
     public DynamicTest[] testValueOfInetAddress() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> IPAddress.valueOf((InetAddress) null))),
@@ -685,6 +744,7 @@ public class IPv6AddressTest {
     }
 
     @TestFactory
+    @DisplayName("getNetmask")
     public DynamicTest[] testGetNetmask() {
         return new DynamicTest[] {
                 testGetNetmask(0, 0L, 0L),
@@ -833,34 +893,37 @@ public class IPv6AddressTest {
         });
     }
 
-    @TestFactory
-    public DynamicTest[] testIsValidNetmask() {
-        List<DynamicTest> tests = new ArrayList<>();
-        tests.add(testIsValidNetmask(IPv6Address.LOCALHOST, false));
-        tests.add(testIsValidNetmask(IPv6Address.MIN_VALUE, true));
-        tests.add(testIsValidNetmask(IPv6Address.MIN_VALUE.next(), false));
-        tests.add(testIsValidNetmask(IPv6Address.MAX_VALUE, true));
+    @ParameterizedTest(name = "{0}")
+    @MethodSource
+    @DisplayName("isValidNetmask")
+    public void testIsValidNetmask(IPv6Address address, boolean expected) {
+        assertEquals(expected, address.isValidNetmask());
+    }
+
+    static Arguments[] testIsValidNetmask() {
+        List<Arguments> arguments = new ArrayList<>();
+        arguments.add(arguments(IPv6Address.LOCALHOST, false));
+        arguments.add(arguments(IPv6Address.MIN_VALUE, true));
+        arguments.add(arguments(IPv6Address.MIN_VALUE.next(), false));
+        arguments.add(arguments(IPv6Address.MAX_VALUE, true));
         // IPv6Address.MAX_VALUE.previous() is the same as getNetmask(127)
-        tests.add(testIsValidNetmask(IPv6Address.MAX_VALUE.previous().previous(), false));
+        arguments.add(arguments(IPv6Address.MAX_VALUE.previous().previous(), false));
         for (int i = 1; i < 127; i++) {
             IPv6Address netmask = IPv6Address.getNetmask(i);
-            tests.add(testIsValidNetmask(netmask, true));
-            tests.add(testIsValidNetmask(netmask.previous(), false));
-            tests.add(testIsValidNetmask(netmask.next(), false));
+            arguments.add(arguments(netmask, true));
+            arguments.add(arguments(netmask.previous(), false));
+            arguments.add(arguments(netmask.next(), false));
         }
         IPv6Address netmask = IPv6Address.getNetmask(127);
-        tests.add(testIsValidNetmask(netmask, true));
-        tests.add(testIsValidNetmask(netmask.previous(), false));
+        arguments.add(arguments(netmask, true));
+        arguments.add(arguments(netmask.previous(), false));
         // netmask.next() is IPv6ddress.MAX_VALUE
-        tests.add(testIsValidNetmask(netmask.next(), true));
-        return tests.stream().toArray(DynamicTest[]::new);
-    }
-
-    private DynamicTest testIsValidNetmask(IPv6Address address, boolean expected) {
-        return dynamicTest(address.toString(), () -> assertEquals(expected, address.isValidNetmask()));
+        arguments.add(arguments(netmask.next(), true));
+        return arguments.stream().toArray(Arguments[]::new);
     }
 
     @TestFactory
+    @DisplayName("isIPv6Address")
     public DynamicTest[] testIsIPv6Address() {
         return new DynamicTest[] {
                 testIsIPv6Address(null, false),
@@ -881,21 +944,12 @@ public class IPv6AddressTest {
         return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> assertEquals(expected, IPv6Address.isIPv6Address(s)));
     }
 
-    @TestFactory
-    public DynamicTest[] testIfValidIPv6Address() {
-        return new DynamicTest[] {
-                testIfValidIPv6Address(null, null),
-                testIfValidIPv6Address("12345:6789:0abc:def3:4567:890a:bcde:f123", null),
-                testIfValidIPv6Address("1234:5678:90ab:cdef:3456:7890:abcd:ef123", null),
-                testIfValidIPv6Address("::1", IPv6Address.LOCALHOST),
-        };
-    }
-
-    private DynamicTest testIfValidIPv6Address(String s, IPv6Address expected) {
-        return dynamicTest(String.valueOf(s), () -> {
-            testIfValidIPv6Address(s, expected, true);
-            testIfValidIPv6Address(s, expected, false);
-        });
+    @ParameterizedTest(name = "{0}")
+    @MethodSource
+    @DisplayName("ifValidIPv6Address")
+    public void testIfValidIPv6Address(String s, IPv6Address expected) {
+        testIfValidIPv6Address(s, expected, true);
+        testIfValidIPv6Address(s, expected, false);
     }
 
     @SuppressWarnings("unchecked")
@@ -911,5 +965,14 @@ public class IPv6AddressTest {
             assertEquals(false, result);
         }
         verifyNoMoreInteractions(predicate);
+    }
+
+    static Arguments[] testIfValidIPv6Address() {
+        return new Arguments[] {
+                arguments(null, null),
+                arguments("12345:6789:0abc:def3:4567:890a:bcde:f123", null),
+                arguments("1234:5678:90ab:cdef:3456:7890:abcd:ef123", null),
+                arguments("::1", IPv6Address.LOCALHOST),
+        };
     }
 }

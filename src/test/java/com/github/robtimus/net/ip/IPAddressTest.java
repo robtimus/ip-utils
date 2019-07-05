@@ -20,6 +20,7 @@ package com.github.robtimus.net.ip;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -29,13 +30,18 @@ import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Predicate;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @SuppressWarnings({ "javadoc", "nls" })
 public class IPAddressTest {
 
     @TestFactory
+    @DisplayName("valueOf(byte[])")
     public DynamicTest[] testValueOfByteArray() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> IPAddress.valueOf((byte[]) null))),
@@ -71,6 +77,7 @@ public class IPAddressTest {
     }
 
     @TestFactory
+    @DisplayName("valueOf(CharSequence)")
     public DynamicTest[] testValueOfCharSequence() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> IPAddress.valueOf((CharSequence) null))),
@@ -105,6 +112,7 @@ public class IPAddressTest {
     }
 
     @TestFactory
+    @DisplayName("tryValueOf")
     public DynamicTest[] testTryValueOf() {
         return new DynamicTest[] {
                 testTryValueOf(null, Optional.empty()),
@@ -134,6 +142,7 @@ public class IPAddressTest {
     }
 
     @TestFactory
+    @DisplayName("valueOf(InetAddress)")
     public DynamicTest[] testValueOfInetAddress() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> IPAddress.valueOf((InetAddress) null))),
@@ -156,6 +165,7 @@ public class IPAddressTest {
     }
 
     @TestFactory
+    @DisplayName("isIPAddress")
     public DynamicTest[] testIsIPAddress() {
         return new DynamicTest[] {
                 testIsIPAddress(null, false),
@@ -181,24 +191,12 @@ public class IPAddressTest {
         return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> assertEquals(expected, IPAddress.isIPAddress(s)));
     }
 
-    @TestFactory
-    public DynamicTest[] testIfValidIPAddress() {
-        return new DynamicTest[] {
-                testIfValidIPAddress(null, null),
-                testIfValidIPAddress("123.456.789.0", null),
-                testIfValidIPAddress("12.34.56.789", null),
-                testIfValidIPAddress("127.0.0.1", IPv4Address.LOCALHOST),
-                testIfValidIPAddress("12345:6789:0abc:def3:4567:890a:bcde:f123", null),
-                testIfValidIPAddress("1234:5678:90ab:cdef:3456:7890:abcd:ef123", null),
-                testIfValidIPAddress("::1", IPv6Address.LOCALHOST),
-        };
-    }
-
-    private DynamicTest testIfValidIPAddress(String s, IPAddress<?> expected) {
-        return dynamicTest(String.valueOf(s), () -> {
-            testIfValidIPAddress(s, expected, true);
-            testIfValidIPAddress(s, expected, false);
-        });
+    @ParameterizedTest(name = "{0}")
+    @MethodSource
+    @DisplayName("ifValidIPAddress")
+    public void testIfValidIPAddress(String s, IPAddress<?> expected) {
+        testIfValidIPAddress(s, expected, true);
+        testIfValidIPAddress(s, expected, false);
     }
 
     @SuppressWarnings("unchecked")
@@ -214,5 +212,17 @@ public class IPAddressTest {
             assertEquals(false, result);
         }
         verifyNoMoreInteractions(predicate);
+    }
+
+    static Arguments[] testIfValidIPAddress() {
+        return new Arguments[] {
+                arguments(null, null),
+                arguments("123.456.789.0", null),
+                arguments("12.34.56.789", null),
+                arguments("127.0.0.1", IPv4Address.LOCALHOST),
+                arguments("12345:6789:0abc:def3:4567:890a:bcde:f123", null),
+                arguments("1234:5678:90ab:cdef:3456:7890:abcd:ef123", null),
+                arguments("::1", IPv6Address.LOCALHOST),
+        };
     }
 }

@@ -28,7 +28,9 @@ import static com.github.robtimus.net.ip.Bytes.OSHIFT3;
 import static com.github.robtimus.net.ip.Bytes.addressToHighAddress;
 import static com.github.robtimus.net.ip.Bytes.addressToLowAddress;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.text.Format;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.util.Arrays;
@@ -37,7 +39,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
- * Formatter for printing and parsing IP addresses.
+ * Formatter for printing and parsing IP addresses. Instances returned from one of the factory methods or a {@link Builder} are immutable.
  *
  * @author Rob Spoor
  * @param <IP> The supported type of IP address.
@@ -57,12 +59,20 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @throws NullPointerException If the given IP address or {@code StringBuilder} is {@code null}.
      */
     public StringBuilder format(IP address, StringBuilder sb) {
-        try {
-            return append(address, sb);
-        } catch (IOException e) {
-            // will not occur because the StringBuilder will not throw any IOExceptions
-            throw new UncheckedIOException(e);
-        }
+        return appendNoThrows(address, sb);
+    }
+
+    /**
+     * Formats an IP address, appending it to a {@code StringBuffer}.
+     *
+     * @param address The IP address to format.
+     * @param sb The {@code StringBuffer} to append to.
+     * @return The given {@code StringBuffer}.
+     * @throws NullPointerException If the given IP address or {@code StringBuffer} is {@code null}.
+     * @since 1.2
+     */
+    public StringBuffer format(IP address, StringBuffer sb) {
+        return appendNoThrows(address, sb);
     }
 
     /**
@@ -87,6 +97,15 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      */
     public abstract <A extends Appendable> A append(IP address, A dest) throws IOException;
 
+    private <A extends Appendable> A appendNoThrows(IP address, A dest) {
+        try {
+            return append(address, dest);
+        } catch (IOException e) {
+            // will not occur because the Appendable will not throw any IOExceptions
+            throw new UncheckedIOException(e);
+        }
+    }
+
     /**
      * Formats an IP address, appending it to a {@code StringBuilder}.
      *
@@ -97,12 +116,21 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @throws IllegalArgumentException If the length of the given array is invalid.
      */
     public StringBuilder format(byte[] address, StringBuilder sb) {
-        try {
-            return append(address, sb);
-        } catch (IOException e) {
-            // will not occur because the StringBuilder will not throw any IOExceptions
-            throw new UncheckedIOException(e);
-        }
+        return appendNoThrows(address, sb);
+    }
+
+    /**
+     * Formats an IP address, appending it to a {@code StringBuffer}.
+     *
+     * @param address A byte array representing the IP address to format.
+     * @param sb The {@code StringBuffer} to append to.
+     * @return The given {@code StringBuffer}.
+     * @throws NullPointerException If the given array or {@code StringBuffer} is {@code null}.
+     * @throws IllegalArgumentException If the length of the given array is invalid.
+     * @since 1.2
+     */
+    public StringBuffer format(byte[] address, StringBuffer sb) {
+        return appendNoThrows(address, sb);
     }
 
     /**
@@ -128,6 +156,17 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @since 1.1
      */
     public abstract <A extends Appendable> A append(byte[] address, A dest) throws IOException;
+
+    private <A extends Appendable> A appendNoThrows(byte[] address, A dest) {
+        try {
+            return append(address, dest);
+        } catch (IOException e) {
+            // will not occur because the Appendable will not throw any IOExceptions
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    abstract StringBuffer format(Object object, StringBuffer dest);
 
     abstract IP valueOf(CharSequence address, int start, int end);
 
@@ -264,6 +303,21 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @since 1.1
      */
     public abstract Optional<byte[]> tryParseToBytes(CharSequence source, int start, int end);
+
+    /**
+     * Returns an {@link IPAddressFormat} that delegates to this object.
+     * As a result, its formatting and parsing with a {@link ParsePosition} will be identical to the printing and parsing of this object.
+     * However, its {@link IPAddressFormat#parseObject(String) parseObject(String)} method behaves slightly differently - as per the contract of
+     * {@link Format#parseObject(String)}, it may not use the entire input for its parsing.
+     * Its {@link IPAddressFormat#parse(CharSequence) parse(CharSequence)} method on the other hand will use the entire input.
+     *
+     * @return An {@link IPAddressFormat} that delegates to this object.
+     * @see #parse(CharSequence, ParsePosition)
+     * @see #format(IPAddress, StringBuffer)
+     * @see #format(byte[], StringBuffer)
+     * @since 1.2
+     */
+    public abstract IPAddressFormat<IP> asFormat();
 
     abstract boolean isValid(CharSequence source, int start, int end);
 
@@ -566,6 +620,17 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
+        StringBuffer format(Object object, StringBuffer dest) {
+            if (object instanceof IPv4Address) {
+                return format((IPv4Address) object, dest);
+            }
+            if (object instanceof byte[]) {
+                return format((byte[]) object, dest);
+            }
+            throw new IllegalArgumentException(Messages.IPAddressFormat.unformattableObject.get(object));
+        }
+
+        @Override
         IPv4Address valueOf(CharSequence address, int start, int end) {
             Objects.requireNonNull(address);
             checkBounds(address, start, end);
@@ -640,6 +705,11 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
             checkBounds(source, start, end);
             Parser parser = new Parser(source, start, end, true);
             return parser.parse() ? Optional.of(Bytes.intToAddress(parser.address)) : Optional.empty();
+        }
+
+        @Override
+        public IPAddressFormat<IPv4Address> asFormat() {
+            return IPv4Format.INSTANCE;
         }
 
         @Override
@@ -788,6 +858,17 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
+        StringBuffer format(Object object, StringBuffer dest) {
+            if (object instanceof IPv6Address) {
+                return format((IPv6Address) object, dest);
+            }
+            if (object instanceof byte[]) {
+                return format((byte[]) object, dest);
+            }
+            throw new IllegalArgumentException(Messages.IPAddressFormat.unformattableObject.get(object));
+        }
+
+        @Override
         IPv6Address valueOf(CharSequence address, int start, int end) {
             Objects.requireNonNull(address);
             checkBounds(address, start, end);
@@ -862,6 +943,12 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
             checkBounds(source, start, end);
             Parser parser = new Parser(source, start, end, true);
             return parser.parse() ? Optional.of(Bytes.longsToAddress(parser.highAddress, parser.lowAddress)) : Optional.empty();
+        }
+
+        @Override
+        public IPAddressFormat<IPv6Address> asFormat() {
+            int index = indexOfInstance(style, upperCase, withIPv4End, encloseInBrackets);
+            return IPv6Format.INSTANCES[index];
         }
 
         @Override
@@ -1280,6 +1367,17 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         }
 
         @Override
+        StringBuffer format(Object object, StringBuffer dest) {
+            if (object instanceof IPAddress<?>) {
+                return format((IPAddress<?>) object, dest);
+            }
+            if (object instanceof byte[]) {
+                return format((byte[]) object, dest);
+            }
+            throw new IllegalArgumentException(Messages.IPAddressFormat.unformattableObject.get(object));
+        }
+
+        @Override
         IPAddress<?> valueOf(CharSequence address, int start, int end) {
             return getFormatter(address, start, end).valueOf(address, start, end);
         }
@@ -1313,6 +1411,12 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         @Override
         public Optional<byte[]> tryParseToBytes(CharSequence source, int start, int end) {
             return source == null ? Optional.empty() : getFormatter(source, start, end).tryParseToBytes(source, start, end);
+        }
+
+        @Override
+        public IPAddressFormat<IPAddress<?>> asFormat() {
+            int index = IPv6.indexOfInstance(ipv6.style, ipv6.upperCase, ipv6.withIPv4End, ipv6.encloseInBrackets);
+            return AnyVersionFormat.INSTANCES[index];
         }
 
         @Override
@@ -1546,6 +1650,144 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
                 return true;
             }
             return false;
+        }
+    }
+
+    private static final class IPv4Format extends IPAddressFormat<IPv4Address> {
+
+        private static final long serialVersionUID = -7978163144639634602L;
+
+        private static final IPv4Format INSTANCE = new IPv4Format();
+
+        @Override
+        IPAddressFormatter<IPv4Address> formatter() {
+            return IPv4.INSTANCE;
+        }
+
+        @Override
+        @SuppressWarnings("nls")
+        public String toString() {
+            return IPAddressFormat.class.getName() + "#IPv4";
+        }
+
+        private Object readResolve() {
+            return INSTANCE;
+        }
+    }
+
+    private static final class IPv6Format extends IPAddressFormat<IPv6Address> {
+
+        private static final long serialVersionUID = 8686933570972695431L;
+
+        private static final IPv6Format[] INSTANCES = createInstances();
+
+        private final IPv6 formatter;
+        private final int index;
+
+        private IPv6Format(IPv6 formatter, int index) {
+            this.formatter = formatter;
+            this.index = index;
+        }
+
+        @Override
+        IPAddressFormatter<IPv6Address> formatter() {
+            return formatter;
+        }
+
+        @Override
+        @SuppressWarnings("nls")
+        public String toString() {
+            return IPAddressFormat.class.getName() + "#IPv6"
+                    + "[style=" + formatter.style
+                    + ",upperCase=" + formatter.upperCase
+                    + ",withIPv4End=" + formatter.withIPv4End
+                    + ",encloseInBrackets=" + formatter.encloseInBrackets
+                    + "]";
+        }
+
+        private static IPv6Format[] createInstances() {
+            IPv6Format[] instances = new IPv6Format[IPv6.INSTANCES.length];
+            for (int i = 0; i < IPv6.INSTANCES.length; i++) {
+                instances[i] = new IPv6Format(IPv6.INSTANCES[i], i);
+            }
+            return instances;
+        }
+
+        private Object writeReplace() {
+            return new Proxy(this);
+        }
+
+        private static final class Proxy implements Serializable {
+
+            private static final long serialVersionUID = -7812395775589349986L;
+
+            private final int index;
+
+            private Proxy(IPv6Format instance) {
+                index = instance.index;
+            }
+
+            private Object readResolve() {
+                return INSTANCES[index];
+            }
+        }
+    }
+
+    private static final class AnyVersionFormat extends IPAddressFormat<IPAddress<?>> {
+
+        private static final long serialVersionUID = -8878877461559168142L;
+
+        private static final AnyVersionFormat[] INSTANCES = createInstances();
+
+        private final AnyVersion formatter;
+        private final int index;
+
+        private AnyVersionFormat(AnyVersion formatter, int index) {
+            this.formatter = formatter;
+            this.index = index;
+        }
+
+        @Override
+        IPAddressFormatter<IPAddress<?>> formatter() {
+            return formatter;
+        }
+
+        @Override
+        @SuppressWarnings("nls")
+        public String toString() {
+            return IPAddressFormat.class.getName() + "#anyVersion"
+                    + "[style=" + formatter.ipv6.style
+                    + ",upperCase=" + formatter.ipv6.upperCase
+                    + ",withIPv4End=" + formatter.ipv6.withIPv4End
+                    + ",encloseInBrackets=" + formatter.ipv6.encloseInBrackets
+                    + "]";
+        }
+
+        private static AnyVersionFormat[] createInstances() {
+            AnyVersionFormat[] instances = new AnyVersionFormat[AnyVersion.INSTANCES.length];
+            for (int i = 0; i < AnyVersion.INSTANCES.length; i++) {
+                instances[i] = new AnyVersionFormat(AnyVersion.INSTANCES[i], i);
+            }
+            return instances;
+        }
+
+        private Object writeReplace() {
+            return new Proxy(this);
+        }
+
+        private static final class Proxy implements Serializable {
+
+            private static final long serialVersionUID = -7051203599374151532L;
+
+            private final int index;
+
+            private Proxy(AnyVersionFormat instance) {
+                index = instance.index;
+            }
+
+            private Object readResolve() {
+                return INSTANCES[index];
+            }
         }
     }
 }

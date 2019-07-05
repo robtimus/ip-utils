@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -34,14 +35,19 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @SuppressWarnings({ "javadoc", "nls" })
 public class IPRangeTest {
 
     @Test
+    @DisplayName("isEmpty")
     public void testIsEmpty() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
@@ -49,6 +55,7 @@ public class IPRangeTest {
     }
 
     @TestFactory
+    @DisplayName("contains")
     public DynamicTest[] testContains() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
@@ -75,6 +82,7 @@ public class IPRangeTest {
     }
 
     @TestFactory
+    @DisplayName("iterator")
     public DynamicTest[] testIterator() {
         return new DynamicTest[] {
                 dynamicTest("end before MAX_VALUE", () -> {
@@ -121,6 +129,7 @@ public class IPRangeTest {
     }
 
     @TestFactory
+    @DisplayName("toArray")
     public DynamicTest[] testToArray() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
@@ -153,6 +162,7 @@ public class IPRangeTest {
     }
 
     @Test
+    @DisplayName("add")
     public void testAdd() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
@@ -160,36 +170,40 @@ public class IPRangeTest {
     }
 
     @Test
+    @DisplayName("remove")
     public void testRemove() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
         assertThrows(UnsupportedOperationException.class, () -> ipRange.remove(address));
     }
 
-    @TestFactory
-    public DynamicTest[] testContainsAll() {
+    @ParameterizedTest(name = "{1}")
+    @MethodSource
+    @DisplayName("containsAll")
+    public <IP extends IPAddress<IP>> void testContainsAll(IPRange<IP> ipRange, Collection<?> c, boolean expected) {
+        assertEquals(expected, ipRange.containsAll(c));
+    }
+
+    static Arguments[] testContainsAll() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
-        return new DynamicTest[] {
-                testContainsAll(ipRange, Collections.emptyList(), true),
-                testContainsAll(ipRange, ipRange, true),
-                testContainsAll(ipRange, Collections.singleton(address), true),
-                testContainsAll(ipRange, Arrays.asList(address, address), true),
-                testContainsAll(ipRange, Arrays.asList(address, address.next()), true),
-                testContainsAll(ipRange, Arrays.asList(address.previous(), address), true),
-                testContainsAll(ipRange, Arrays.asList(address, address.next().next()), false),
-                testContainsAll(ipRange, Arrays.asList(address.previous().previous(), address), false),
-                testContainsAll(ipRange, address.asRange(), true),
-                testContainsAll(ipRange, IPv4Address.MIN_VALUE.to(address), false),
-                testContainsAll(ipRange, address.to(IPv4Address.MAX_VALUE), false),
+        return new Arguments[] {
+                arguments(ipRange, Collections.emptyList(), true),
+                arguments(ipRange, ipRange, true),
+                arguments(ipRange, Collections.singleton(address), true),
+                arguments(ipRange, Arrays.asList(address, address), true),
+                arguments(ipRange, Arrays.asList(address, address.next()), true),
+                arguments(ipRange, Arrays.asList(address.previous(), address), true),
+                arguments(ipRange, Arrays.asList(address, address.next().next()), false),
+                arguments(ipRange, Arrays.asList(address.previous().previous(), address), false),
+                arguments(ipRange, address.asRange(), true),
+                arguments(ipRange, IPv4Address.MIN_VALUE.to(address), false),
+                arguments(ipRange, address.to(IPv4Address.MAX_VALUE), false),
         };
     }
 
-    private <IP extends IPAddress<IP>> DynamicTest testContainsAll(IPRange<IP> ipRange, Collection<?> c, boolean expected) {
-        return dynamicTest(c.toString(), () -> assertEquals(expected, ipRange.containsAll(c)));
-    }
-
     @Test
+    @DisplayName("addAll")
     public void testAddAll() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
@@ -197,6 +211,7 @@ public class IPRangeTest {
     }
 
     @Test
+    @DisplayName("removeAll")
     public void testRemoveAll() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
@@ -204,6 +219,7 @@ public class IPRangeTest {
     }
 
     @Test
+    @DisplayName("removeIf")
     public void testRemoveIf() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
@@ -211,6 +227,7 @@ public class IPRangeTest {
     }
 
     @Test
+    @DisplayName("retainAll")
     public void testRetainAll() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
@@ -218,6 +235,7 @@ public class IPRangeTest {
     }
 
     @Test
+    @DisplayName("clear")
     public void testClear() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
@@ -225,6 +243,7 @@ public class IPRangeTest {
     }
 
     @TestFactory
+    @DisplayName("forEach")
     public DynamicTest[] testForEach() {
         return new DynamicTest[] {
                 dynamicTest("end before MAX_VALUE", () -> {

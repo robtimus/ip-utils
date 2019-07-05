@@ -18,38 +18,43 @@
 package com.github.robtimus.net.ip;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.DynamicTest.dynamicTest;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import java.util.function.BiConsumer;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @SuppressWarnings({ "javadoc", "nls" })
 public class AbstractIPRangeTest {
 
-    @TestFactory
-    public DynamicTest[] testEquals() {
+    @ParameterizedTest(name = "{1}")
+    @MethodSource
+    @DisplayName("equals")
+    public void testEquals(IPRange<?> ipRange, Object object, boolean expectEquals) {
+        BiConsumer<Object, Object> equalsCheck = expectEquals ? Assertions::assertEquals : Assertions::assertNotEquals;
+        equalsCheck.accept(ipRange, object);
+    }
+
+    static Arguments[] testEquals() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
-        return new DynamicTest[] {
-                testEquals(ipRange, null, false),
-                testEquals(ipRange, "foo", false),
-                testEquals(ipRange, address.to(IPv4Address.MAX_VALUE), false),
-                testEquals(ipRange, ipRange, true),
-                testEquals(ipRange, address.previous().to(address.next()), true),
-                testEquals(ipRange, new IPRangeImpl.IPv4(address.previous(), address.next()), true),
-                testEquals(ipRange, address.previous().to(address), false),
-                testEquals(ipRange, address.to(address.next()), false),
+        return new Arguments[] {
+                arguments(ipRange, null, false),
+                arguments(ipRange, "foo", false),
+                arguments(ipRange, address.to(IPv4Address.MAX_VALUE), false),
+                arguments(ipRange, ipRange, true),
+                arguments(ipRange, address.previous().to(address.next()), true),
+                arguments(ipRange, new IPRangeImpl.IPv4(address.previous(), address.next()), true),
+                arguments(ipRange, address.previous().to(address), false),
+                arguments(ipRange, address.to(address.next()), false),
         };
     }
 
-    private DynamicTest testEquals(IPRange<?> ipRange, Object object, boolean expectEquals) {
-        BiConsumer<Object, Object> equalsCheck = expectEquals ? Assertions::assertEquals : Assertions::assertNotEquals;
-        return dynamicTest(String.valueOf(object), () -> equalsCheck.accept(ipRange, object));
-    }
-
     @Test
+    @DisplayName("hashCode")
     public void testHashCode() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);

@@ -24,6 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import java.util.Spliterator;
 import java.util.function.Consumer;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.TestFactory;
 public class IPRangeSpliteratorTest {
 
     @TestFactory
+    @DisplayName("tryAdvance")
     @SuppressWarnings("unchecked")
     public DynamicTest[] testTryAdvance() {
         return new DynamicTest[] {
@@ -61,6 +63,7 @@ public class IPRangeSpliteratorTest {
     }
 
     @Test
+    @DisplayName("getComparator")
     public void testGetComparator() {
         IPRangeSpliterator<?> spliterator = new TestSpliterator(IPv4Address.MIN_VALUE, IPv4Address.MAX_VALUE);
         assertNull(spliterator.getComparator());

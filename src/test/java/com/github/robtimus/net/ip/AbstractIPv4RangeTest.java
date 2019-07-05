@@ -18,33 +18,36 @@
 package com.github.robtimus.net.ip;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.DynamicTest.dynamicTest;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import java.util.Spliterator;
-import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@SuppressWarnings({ "javadoc", "nls" })
+@SuppressWarnings("javadoc")
 public class AbstractIPv4RangeTest {
 
-    @TestFactory
-    public DynamicTest[] testSize() {
-        return new DynamicTest[] {
-                testSize(IPv4Address.MIN_VALUE, IPv4Address.MAX_VALUE, Integer.MAX_VALUE),
-                testSize(new IPv4Address(0), new IPv4Address(Integer.MAX_VALUE), Integer.MAX_VALUE),
-                testSize(new IPv4Address(Integer.MAX_VALUE - 1000), new IPv4Address(Integer.MAX_VALUE), 1001),
+    @ParameterizedTest(name = "[{0}...{1}]: {2}")
+    @MethodSource
+    @DisplayName("size")
+    public void testSize(IPv4Address from, IPv4Address to, int expectedSize) {
+        IPv4Range ipRange = new TestRange(from, to);
+        assertEquals(expectedSize, ipRange.size());
+        assertEquals(expectedSize, ipRange.size());
+    }
+
+    static Arguments[] testSize() {
+        return new Arguments[] {
+                arguments(IPv4Address.MIN_VALUE, IPv4Address.MAX_VALUE, Integer.MAX_VALUE),
+                arguments(new IPv4Address(0), new IPv4Address(Integer.MAX_VALUE), Integer.MAX_VALUE),
+                arguments(new IPv4Address(Integer.MAX_VALUE - 1000), new IPv4Address(Integer.MAX_VALUE), 1001),
         };
     }
 
-    private DynamicTest testSize(IPv4Address from, IPv4Address to, int expectedSize) {
-        IPv4Range ipRange = new TestRange(from, to);
-        return dynamicTest(String.format("[%s...%s]: %d", from, to, expectedSize), () -> {
-            assertEquals(expectedSize, ipRange.size());
-            assertEquals(expectedSize, ipRange.size());
-        });
-    }
-
     @Test
+    @DisplayName("spliterator")
     public void testSpliterator() {
         IPv4Range ipRange = new TestRange(IPv4Address.MIN_VALUE, IPv4Address.MAX_VALUE);
         Spliterator<?> spliterator = ipRange.spliterator();

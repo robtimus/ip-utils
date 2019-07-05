@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -36,14 +37,19 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.function.Consumer;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @SuppressWarnings({ "javadoc", "nls" })
 public class SingletonIPRangeTest {
 
     @Test
+    @DisplayName("from and to")
     public void testFromAndTo() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<?> ipRange = new SingletonIPRange.IPv4(address);
@@ -52,37 +58,35 @@ public class SingletonIPRangeTest {
     }
 
     @Test
+    @DisplayName("size")
     public void testSize() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<?> ipRange = new SingletonIPRange.IPv4(address);
         assertEquals(1, ipRange.size());
     }
 
-    @TestFactory
-    public DynamicTest[] testContains() {
+    @ParameterizedTest(name = "{1}")
+    @MethodSource
+    @DisplayName("contains")
+    public <IP extends IPAddress<IP>> void testContains(IPRange<IP> ipRange, IP address, boolean expected) {
+        assertEquals(expected, ipRange.contains(address));
+        assertEquals(expected, ipRange.contains((Object) address));
+    }
+
+    static Arguments[] testContains() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPv4Range ipRange = new SingletonIPRange.IPv4(address);
-        return new DynamicTest[] {
-                testContains(ipRange, address, true),
-                testContains(ipRange, address.previous(), false),
-                testContains(ipRange, address.next(), false),
-                testContains(ipRange, null, false),
-                testContains(ipRange, IPv6Address.LOCALHOST, false),
+        return new Arguments[] {
+                arguments(ipRange, address, true),
+                arguments(ipRange, address.previous(), false),
+                arguments(ipRange, address.next(), false),
+                arguments(ipRange, null, false),
+                arguments(ipRange, IPv6Address.LOCALHOST, false),
         };
     }
 
-    private <IP extends IPAddress<IP>> DynamicTest testContains(IPRange<IP> ipRange, IP address, boolean expected) {
-        return dynamicTest(String.valueOf(address), () -> {
-            assertEquals(expected, ipRange.contains(address));
-            assertEquals(expected, ipRange.contains((Object) address));
-        });
-    }
-
-    private DynamicTest testContains(IPRange<?> ipRange, Object object, boolean expected) {
-        return dynamicTest(String.valueOf(object), () -> assertEquals(expected, ipRange.contains(object)));
-    }
-
     @Test
+    @DisplayName("iterator")
     public void testIterator() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new SingletonIPRange.IPv4(address);
@@ -99,6 +103,7 @@ public class SingletonIPRangeTest {
     }
 
     @TestFactory
+    @DisplayName("toArray")
     public DynamicTest[] testToArray() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<?> ipRange = new SingletonIPRange.IPv4(address);
@@ -130,45 +135,50 @@ public class SingletonIPRangeTest {
         };
     }
 
-    @TestFactory
-    public DynamicTest[] testContainsAll() {
+    @ParameterizedTest(name = "{1}")
+    @MethodSource
+    @DisplayName("containsAll")
+    public void testContainsAll(IPRange<?> ipRange, Collection<?> c, boolean expected) {
+        assertEquals(expected, ipRange.containsAll(c));
+    }
+
+    static Arguments[] testContainsAll() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<?> ipRange = new SingletonIPRange.IPv4(address);
-        return new DynamicTest[] {
-                testContainsAll(ipRange, Collections.emptyList(), true),
-                testContainsAll(ipRange, ipRange, true),
-                testContainsAll(ipRange, Collections.singleton(address), true),
-                testContainsAll(ipRange, Arrays.asList(address, address), true),
-                testContainsAll(ipRange, Arrays.asList(address, address.next()), false),
-                testContainsAll(ipRange, Arrays.asList(address.previous(), address), false),
+        return new Arguments[] {
+                arguments(ipRange, Collections.emptyList(), true),
+                arguments(ipRange, ipRange, true),
+                arguments(ipRange, Collections.singleton(address), true),
+                arguments(ipRange, Arrays.asList(address, address), true),
+                arguments(ipRange, Arrays.asList(address, address.next()), false),
+                arguments(ipRange, Arrays.asList(address.previous(), address), false),
         };
     }
 
-    private DynamicTest testContainsAll(IPRange<?> ipRange, Collection<?> c, boolean expected) {
-        return dynamicTest(c.toString(), () -> assertEquals(expected, ipRange.containsAll(c)));
+    @ParameterizedTest(name = "{1}")
+    @MethodSource
+    @DisplayName("equals")
+    public void testEquals(IPRange<?> ipRange, Object object, boolean expected) {
+        assertEquals(expected, ipRange.equals(object));
     }
 
-    @TestFactory
-    public DynamicTest[] testEquals() {
+    static Arguments[] testEquals() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<?> ipRange = new SingletonIPRange.IPv4(address);
-        return new DynamicTest[] {
-                testEquals(ipRange, null, false),
-                testEquals(ipRange, "foo", false),
-                testEquals(ipRange, address.to(IPv4Address.MAX_VALUE), false),
-                testEquals(ipRange, ipRange, true),
-                testEquals(ipRange, address.to(address), true),
-                testEquals(ipRange, new IPRangeImpl.IPv4(address, address), true),
-                testEquals(ipRange, address.previous().to(address), false),
-                testEquals(ipRange, address.to(address.next()), false),
+        return new Arguments[] {
+                arguments(ipRange, null, false),
+                arguments(ipRange, "foo", false),
+                arguments(ipRange, address.to(IPv4Address.MAX_VALUE), false),
+                arguments(ipRange, ipRange, true),
+                arguments(ipRange, address.to(address), true),
+                arguments(ipRange, new IPRangeImpl.IPv4(address, address), true),
+                arguments(ipRange, address.previous().to(address), false),
+                arguments(ipRange, address.to(address.next()), false),
         };
-    }
-
-    private DynamicTest testEquals(IPRange<?> ipRange, Object object, boolean expected) {
-        return dynamicTest(String.valueOf(object), () -> assertEquals(expected, ipRange.equals(object)));
     }
 
     @Test
+    @DisplayName("hashCode")
     public void testHashCode() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<?> ipRange = new SingletonIPRange.IPv4(address);
@@ -177,6 +187,7 @@ public class SingletonIPRangeTest {
     }
 
     @Test
+    @DisplayName("toString")
     public void testToString() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<?> ipRange = new SingletonIPRange.IPv4(address);
@@ -186,6 +197,7 @@ public class SingletonIPRangeTest {
     }
 
     @Test
+    @DisplayName("forEach")
     public void testForEach() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<?> ipRange = new SingletonIPRange.IPv4(address);
@@ -197,6 +209,7 @@ public class SingletonIPRangeTest {
     }
 
     @Test
+    @DisplayName("spliterator")
     @SuppressWarnings("unchecked")
     public void testSpliterator() {
         IPv4Address address = IPv4Address.LOCALHOST;

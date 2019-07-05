@@ -21,7 +21,7 @@ import static com.github.robtimus.tryparse.TryParse.tryParseInt;
 import java.util.Optional;
 
 /**
- * Represents a subnet of IP addresses.
+ * Represents a subnet of IP addresses. Immutable.
  *
  * @author Rob Spoor
  * @param <IP> The type of IP address in the subnet.

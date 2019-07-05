@@ -20,53 +20,60 @@ package com.github.robtimus.net.ip;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import java.util.Optional;
 import java.util.Spliterator;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @SuppressWarnings({ "javadoc", "nls" })
 public class IPv6SubnetTest {
 
-    @TestFactory
-    public DynamicTest[] testSize() {
-        return new DynamicTest[] {
-                testSize(0, Integer.MAX_VALUE),
-                testSize(8, Integer.MAX_VALUE),
-                testSize(16, Integer.MAX_VALUE),
-                testSize(24, Integer.MAX_VALUE),
-                testSize(28, Integer.MAX_VALUE),
-                testSize(32, Integer.MAX_VALUE),
-                testSize(40, Integer.MAX_VALUE),
-                testSize(48, Integer.MAX_VALUE),
-                testSize(64, Integer.MAX_VALUE),
-                testSize(72, Integer.MAX_VALUE),
-                testSize(80, Integer.MAX_VALUE),
-                testSize(88, Integer.MAX_VALUE),
-                testSize(96, Integer.MAX_VALUE),
-                testSize(97, Integer.MAX_VALUE),
-                testSize(98, 1073741824),
-                testSize(99, 536870912),
-                testSize(100, 268435456),
-                testSize(104, 16777216),
-                testSize(112, 65536),
-                testSize(120, 256),
-                testSize(126, 4),
-                testSize(127, 2),
-                testSize(128, 1),
+    @ParameterizedTest(name = "{0}/{1}: {2}")
+    @MethodSource
+    @DisplayName("size")
+    public void testSize(IPv6Address address, int prefixLength, int expectedSize) {
+        IPv6Subnet subnet = address.startingSubnet(prefixLength);
+        assertEquals(expectedSize, subnet.size());
+        assertEquals(expectedSize, subnet.size());
+    }
+
+    static Arguments[] testSize() {
+        IPv6Address address = IPv6Address.MIN_VALUE;
+        return new Arguments[] {
+                arguments(address, 0, Integer.MAX_VALUE),
+                arguments(address, 8, Integer.MAX_VALUE),
+                arguments(address, 16, Integer.MAX_VALUE),
+                arguments(address, 24, Integer.MAX_VALUE),
+                arguments(address, 28, Integer.MAX_VALUE),
+                arguments(address, 32, Integer.MAX_VALUE),
+                arguments(address, 40, Integer.MAX_VALUE),
+                arguments(address, 48, Integer.MAX_VALUE),
+                arguments(address, 64, Integer.MAX_VALUE),
+                arguments(address, 72, Integer.MAX_VALUE),
+                arguments(address, 80, Integer.MAX_VALUE),
+                arguments(address, 88, Integer.MAX_VALUE),
+                arguments(address, 96, Integer.MAX_VALUE),
+                arguments(address, 97, Integer.MAX_VALUE),
+                arguments(address, 98, 1073741824),
+                arguments(address, 99, 536870912),
+                arguments(address, 100, 268435456),
+                arguments(address, 104, 16777216),
+                arguments(address, 112, 65536),
+                arguments(address, 120, 256),
+                arguments(address, 126, 4),
+                arguments(address, 127, 2),
+                arguments(address, 128, 1),
         };
     }
 
-    private DynamicTest testSize(int prefixLength, int expectedSize) {
-        IPv6Subnet subnet = IPv6Address.MIN_VALUE.startingSubnet(prefixLength);
-        return dynamicTest(String.format("%s: %d", subnet, expectedSize), () -> {
-            assertEquals(expectedSize, subnet.size());
-            assertEquals(expectedSize, subnet.size());
-        });
-    }
-
     @Test
+    @DisplayName("spliterator")
     public void testSpliterator() {
         IPv6Subnet subnet = IPv6Address.MIN_VALUE.startingSubnet(0);
         Spliterator<?> spliterator = subnet.spliterator();
@@ -75,6 +82,7 @@ public class IPv6SubnetTest {
     }
 
     @TestFactory
+    @DisplayName("valueOf(CharSequence) and valueOf(CharSequence, int, int)")
     public DynamicTest[] testValueOfCIDRNotation() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> {
@@ -171,6 +179,7 @@ public class IPv6SubnetTest {
     }
 
     @TestFactory
+    @DisplayName("tryValueOfIPv6")
     public DynamicTest[] testTryValueOfIPv6() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> {
@@ -225,6 +234,7 @@ public class IPv6SubnetTest {
     }
 
     @TestFactory
+    @DisplayName("valueOf(CharSequence, int) and valueOf(IPv6Address, int)")
     public DynamicTest[] testValueOfWithIPAddress() {
         CharSequence address = "12:34:56:78:90:ab:cd:ef";
         return new DynamicTest[] {
@@ -279,6 +289,7 @@ public class IPv6SubnetTest {
     }
 
     @TestFactory
+    @DisplayName("isIPv6Subnet")
     public DynamicTest[] testIsIPv6Subnet() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> {

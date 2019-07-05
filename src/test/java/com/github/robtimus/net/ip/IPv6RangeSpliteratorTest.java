@@ -23,16 +23,22 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import java.util.Spliterator;
 import java.util.function.Consumer;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @SuppressWarnings("javadoc")
 public class IPv6RangeSpliteratorTest {
 
     @Test
+    @DisplayName("trySplit")
     public void testTrySplit() {
         IPv6RangeSpliterator spliterator = new IPv6RangeSpliterator(IPv6Address.MIN_VALUE.to(IPv6Address.MAX_VALUE));
 
@@ -78,6 +84,7 @@ public class IPv6RangeSpliteratorTest {
     }
 
     @TestFactory
+    @DisplayName("estimateSize")
     public DynamicTest[] testEstimateSize() {
         return new DynamicTest[] {
                 testEstimateSize(IPv6Address.MIN_VALUE.to(IPv6Address.MAX_VALUE), spliterator -> {
@@ -140,26 +147,26 @@ public class IPv6RangeSpliteratorTest {
         return dynamicTest(ipRange.toString(), () -> test.accept(new IPv6RangeSpliterator(ipRange)));
     }
 
-    @TestFactory
-    public DynamicTest[] testCharacteristics() {
-        return new DynamicTest[] {
-                testCharacteristics(IPv6Address.MIN_VALUE.to(IPv6Address.MAX_VALUE), false),
-                testCharacteristics(IPv6Address.MIN_VALUE.to(IPv6Address.valueOf(0, Long.MAX_VALUE - 1)), false),
-                testCharacteristics(IPv6Address.MIN_VALUE.to(IPv6Address.valueOf(0, Long.MAX_VALUE - 2)), true),
-        };
+    @ParameterizedTest(name = "{0}")
+    @MethodSource
+    @DisplayName("characteristics")
+    public void testCharacteristics(IPRange<IPv6Address> ipRange, boolean sized) {
+        IPv6RangeSpliterator spliterator = new IPv6RangeSpliterator(ipRange);
+        assertTrue(spliterator.hasCharacteristics(Spliterator.ORDERED));
+        assertTrue(spliterator.hasCharacteristics(Spliterator.DISTINCT));
+        assertTrue(spliterator.hasCharacteristics(Spliterator.SORTED));
+        assertEquals(sized, spliterator.hasCharacteristics(Spliterator.SIZED));
+        assertTrue(spliterator.hasCharacteristics(Spliterator.NONNULL));
+        assertTrue(spliterator.hasCharacteristics(Spliterator.IMMUTABLE));
+        assertFalse(spliterator.hasCharacteristics(Spliterator.CONCURRENT));
+        assertEquals(sized, spliterator.hasCharacteristics(Spliterator.SUBSIZED));
     }
 
-    private DynamicTest testCharacteristics(IPRange<IPv6Address> ipRange, boolean sized) {
-        return dynamicTest(ipRange.toString(), () -> {
-            IPv6RangeSpliterator spliterator = new IPv6RangeSpliterator(ipRange);
-            assertTrue(spliterator.hasCharacteristics(Spliterator.ORDERED));
-            assertTrue(spliterator.hasCharacteristics(Spliterator.DISTINCT));
-            assertTrue(spliterator.hasCharacteristics(Spliterator.SORTED));
-            assertEquals(sized, spliterator.hasCharacteristics(Spliterator.SIZED));
-            assertTrue(spliterator.hasCharacteristics(Spliterator.NONNULL));
-            assertTrue(spliterator.hasCharacteristics(Spliterator.IMMUTABLE));
-            assertFalse(spliterator.hasCharacteristics(Spliterator.CONCURRENT));
-            assertEquals(sized, spliterator.hasCharacteristics(Spliterator.SUBSIZED));
-        });
+    static Arguments[] testCharacteristics() {
+        return new Arguments[] {
+                arguments(IPv6Address.MIN_VALUE.to(IPv6Address.MAX_VALUE), false),
+                arguments(IPv6Address.MIN_VALUE.to(IPv6Address.valueOf(0, Long.MAX_VALUE - 1)), false),
+                arguments(IPv6Address.MIN_VALUE.to(IPv6Address.valueOf(0, Long.MAX_VALUE - 2)), true),
+        };
     }
 }

@@ -20,41 +20,48 @@ package com.github.robtimus.net.ip;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import java.util.Optional;
 import java.util.Spliterator;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @SuppressWarnings({ "javadoc", "nls" })
 public class IPv4SubnetTest {
 
-    @TestFactory
-    public DynamicTest[] testSize() {
-        return new DynamicTest[] {
-                testSize(0, Integer.MAX_VALUE),
-                testSize(1, Integer.MAX_VALUE),
-                testSize(2, 1073741824),
-                testSize(3, 536870912),
-                testSize(4, 268435456),
-                testSize(8, 16777216),
-                testSize(16, 65536),
-                testSize(24, 256),
-                testSize(30, 4),
-                testSize(31, 2),
-                testSize(32, 1),
+    @ParameterizedTest(name = "{0}/{1}: {2}")
+    @MethodSource
+    @DisplayName("size")
+    public void testSize(IPv4Address address, int prefixLength, int expectedSize) {
+        IPv4Subnet subnet = address.startingSubnet(prefixLength);
+        assertEquals(expectedSize, subnet.size());
+        assertEquals(expectedSize, subnet.size());
+    }
+
+    static Arguments[] testSize() {
+        IPv4Address address = IPv4Address.MIN_VALUE;
+        return new Arguments[] {
+                arguments(address, 0, Integer.MAX_VALUE),
+                arguments(address, 1, Integer.MAX_VALUE),
+                arguments(address, 2, 1073741824),
+                arguments(address, 3, 536870912),
+                arguments(address, 4, 268435456),
+                arguments(address, 8, 16777216),
+                arguments(address, 16, 65536),
+                arguments(address, 24, 256),
+                arguments(address, 30, 4),
+                arguments(address, 31, 2),
+                arguments(address, 32, 1),
         };
     }
 
-    private DynamicTest testSize(int prefixLength, int expectedSize) {
-        IPv4Subnet subnet = IPv4Address.MIN_VALUE.startingSubnet(prefixLength);
-        return dynamicTest(String.format("%s: %d", subnet, expectedSize), () -> {
-            assertEquals(expectedSize, subnet.size());
-            assertEquals(expectedSize, subnet.size());
-        });
-    }
-
     @Test
+    @DisplayName("spliterator")
     public void testSpliterator() {
         IPv4Subnet subnet = IPv4Address.MIN_VALUE.startingSubnet(0);
         Spliterator<?> spliterator = subnet.spliterator();
@@ -63,6 +70,7 @@ public class IPv4SubnetTest {
     }
 
     @TestFactory
+    @DisplayName("valueOf(CharSequence) and valueOf(CharSequence, int, int)")
     public DynamicTest[] testValueOfCIDRNotation() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> {
@@ -143,6 +151,7 @@ public class IPv4SubnetTest {
     }
 
     @TestFactory
+    @DisplayName("tryValueOfIPv4")
     public DynamicTest[] testTryValueOfIPv4() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> {
@@ -185,6 +194,7 @@ public class IPv4SubnetTest {
     }
 
     @TestFactory
+    @DisplayName("valueOf(CharSequence, int) and valueOf(IPv4Address, int)")
     public DynamicTest[] testValueOfWithIPAddress() {
         CharSequence address = "192.168.171.13";
         return new DynamicTest[] {
@@ -231,6 +241,7 @@ public class IPv4SubnetTest {
     }
 
     @TestFactory
+    @DisplayName("valueOf(CharSequence, Charsequence) and valueOf(IPv4Address, IPv4Address)")
     public DynamicTest[] testValueOfWithIPAddressWithNetmask() {
         CharSequence address = "192.168.171.13";
         return new DynamicTest[] {
@@ -280,6 +291,7 @@ public class IPv4SubnetTest {
     }
 
     @TestFactory
+    @DisplayName("isIPv4Subnet")
     public DynamicTest[] testIsIPv4Subnet() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> {

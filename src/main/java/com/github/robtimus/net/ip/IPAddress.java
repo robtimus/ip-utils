@@ -21,14 +21,13 @@ import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
- * Represents an IP address.
+ * Represents an IP address. Immutable.
  * <p>
  * Unlike {@link InetAddress}, this class is more lightweight and contains only the IP address itself, not host names.
  *
@@ -76,7 +75,7 @@ public abstract class IPAddress<IP extends IPAddress<IP>> implements Comparable<
                 inetAddress = InetAddress.getByAddress(address);
             } catch (UnknownHostException e) {
                 // should not occur
-                throw new IllegalStateException(Messages.IPAddress.unknownHost.get(Arrays.toString(address)), e);
+                throw new IllegalStateException(e);
             }
         }
         return inetAddress;

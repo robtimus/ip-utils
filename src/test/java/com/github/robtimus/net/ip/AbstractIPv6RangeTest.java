@@ -18,52 +18,57 @@
 package com.github.robtimus.net.ip;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.DynamicTest.dynamicTest;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import java.util.Spliterator;
-import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-@SuppressWarnings({ "javadoc", "nls" })
+@SuppressWarnings("javadoc")
 public class AbstractIPv6RangeTest {
 
-    @TestFactory
-    public DynamicTest[] testSize() {
-        return new DynamicTest[] {
+    @ParameterizedTest(name = "[{0}...{1}]: {2}")
+    @MethodSource
+    @DisplayName("size")
+    public void testSize(IPv6Address from, IPv6Address to, int expectedSize) {
+        IPv6Range ipRange = new TestRange(from, to);
+        assertEquals(expectedSize, ipRange.size());
+        assertEquals(expectedSize, ipRange.size());
+    }
+
+    static Arguments[] testSize() {
+        return new Arguments[] {
                 // same high address
-                testSize(new IPv6Address(1000L, 0L), new IPv6Address(1000L, Long.MAX_VALUE), Integer.MAX_VALUE),
-                testSize(new IPv6Address(1000L, IPv6Address.MIN_LOW_ADDRESS), new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS), Integer.MAX_VALUE),
-                testSize(new IPv6Address(1000L, 0L), new IPv6Address(1000L, Integer.MAX_VALUE), Integer.MAX_VALUE),
-                testSize(new IPv6Address(1000L, Long.MAX_VALUE - 1000L), new IPv6Address(1000L, Long.MAX_VALUE), 1001),
+                arguments(new IPv6Address(1000L, 0L), new IPv6Address(1000L, Long.MAX_VALUE), Integer.MAX_VALUE),
+                arguments(new IPv6Address(1000L, IPv6Address.MIN_LOW_ADDRESS), new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS),
+                        Integer.MAX_VALUE),
+                arguments(new IPv6Address(1000L, 0L), new IPv6Address(1000L, Integer.MAX_VALUE), Integer.MAX_VALUE),
+                arguments(new IPv6Address(1000L, Long.MAX_VALUE - 1000L), new IPv6Address(1000L, Long.MAX_VALUE), 1001),
 
                 // difference of 1 in high addresses
-                testSize(new IPv6Address(1000L, 0L), new IPv6Address(1001L, Long.MAX_VALUE), Integer.MAX_VALUE),
-                testSize(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS), new IPv6Address(1001L, 0L), 2),
-                testSize(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS - Integer.MAX_VALUE), new IPv6Address(1001L, 0L), Integer.MAX_VALUE),
-                testSize(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS - 1000L), new IPv6Address(1001L, 1000L), 2002),
-                testSize(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS), new IPv6Address(1001L, IPv6Address.MAX_LOW_ADDRESS), Integer.MAX_VALUE),
-                testSize(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS), new IPv6Address(1001L, Integer.MAX_VALUE), Integer.MAX_VALUE),
-                testSize(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS), new IPv6Address(1001L, Integer.MAX_VALUE - 1), Integer.MAX_VALUE),
-                testSize(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS), new IPv6Address(1001L, Integer.MAX_VALUE - 2), Integer.MAX_VALUE),
-                testSize(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS), new IPv6Address(1001L, Integer.MAX_VALUE - 3), Integer.MAX_VALUE - 1),
-                testSize(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS - 1000L), new IPv6Address(1001L, Integer.MAX_VALUE - 1000L),
+                arguments(new IPv6Address(1000L, 0L), new IPv6Address(1001L, Long.MAX_VALUE), Integer.MAX_VALUE),
+                arguments(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS), new IPv6Address(1001L, 0L), 2),
+                arguments(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS - Integer.MAX_VALUE), new IPv6Address(1001L, 0L), Integer.MAX_VALUE),
+                arguments(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS - 1000L), new IPv6Address(1001L, 1000L), 2002),
+                arguments(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS), new IPv6Address(1001L, IPv6Address.MAX_LOW_ADDRESS),
+                        Integer.MAX_VALUE),
+                arguments(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS), new IPv6Address(1001L, Integer.MAX_VALUE), Integer.MAX_VALUE),
+                arguments(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS), new IPv6Address(1001L, Integer.MAX_VALUE - 1), Integer.MAX_VALUE),
+                arguments(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS), new IPv6Address(1001L, Integer.MAX_VALUE - 2), Integer.MAX_VALUE),
+                arguments(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS), new IPv6Address(1001L, Integer.MAX_VALUE - 3), Integer.MAX_VALUE - 1),
+                arguments(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS - 1000L), new IPv6Address(1001L, Integer.MAX_VALUE - 1000L),
                         Integer.MAX_VALUE),
 
                 // difference > 1 in high addresses
-                testSize(IPv6Address.MIN_VALUE, IPv6Address.MAX_VALUE, Integer.MAX_VALUE),
-                testSize(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS), new IPv6Address(1002L, 0), Integer.MAX_VALUE),
+                arguments(IPv6Address.MIN_VALUE, IPv6Address.MAX_VALUE, Integer.MAX_VALUE),
+                arguments(new IPv6Address(1000L, IPv6Address.MAX_LOW_ADDRESS), new IPv6Address(1002L, 0), Integer.MAX_VALUE),
         };
     }
 
-    private DynamicTest testSize(IPv6Address from, IPv6Address to, int expectedSize) {
-        IPv6Range ipRange = new TestRange(from, to);
-        return dynamicTest(String.format("[%s...%s]: %d", from, to, expectedSize), () -> {
-            assertEquals(expectedSize, ipRange.size());
-            assertEquals(expectedSize, ipRange.size());
-        });
-    }
-
     @Test
+    @DisplayName("spliterator")
     public void testSpliterator() {
         IPv6Range ipRange = new AbstractIPv6Range() {
             @Override

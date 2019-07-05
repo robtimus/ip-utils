@@ -18,12 +18,14 @@
 package com.github.robtimus.net.ip;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings("javadoc")
 public class IPv6RangeTest {
 
     @Test
+    @DisplayName("all()")
     public void testAll() {
         IPv6Range ipRange = IPv6Range.all();
         assertSame(IPv6Address.MIN_VALUE, ipRange.from());
