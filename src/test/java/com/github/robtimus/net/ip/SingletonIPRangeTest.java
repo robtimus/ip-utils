@@ -23,8 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
@@ -94,12 +94,7 @@ public class SingletonIPRangeTest {
         assertTrue(iterator.hasNext());
         assertSame(address, iterator.next());
         assertFalse(iterator.hasNext());
-        try {
-            iterator.next();
-            fail("expected NoSuchElementException");
-        } catch (@SuppressWarnings("unused") NoSuchElementException e) {
-            // expected
-        }
+        assertThrows(NoSuchElementException.class, () -> iterator.next());
     }
 
     @TestFactory
