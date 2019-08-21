@@ -42,6 +42,7 @@ import java.text.ParsePosition;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -94,6 +95,24 @@ public class IPAddressFormatterTest {
                 arguments("withDefaults", IPAddressFormatter.anyVersion().withDefaults(), ipv6Address, "1:2:3::ffab:1234"),
                 // others are tested through nested class AnyVersion
         };
+    }
+
+    @Nested
+    @DisplayName("Builder")
+    public class BuilderTest {
+
+        @Test
+        @DisplayName("transform")
+        public void testTransform() {
+            IPAddressFormatter.Builder<IPv6Address> builder = IPAddressFormatter.ipv6();
+            @SuppressWarnings("unchecked")
+            Function<IPAddressFormatter.Builder<?>, String> f = mock(Function.class);
+            when(f.apply(builder)).thenReturn("result");
+
+            assertEquals("result", builder.transform(f));
+            verify(f).apply(builder);
+            verifyNoMoreInteractions(f);
+        }
     }
 
     @Nested

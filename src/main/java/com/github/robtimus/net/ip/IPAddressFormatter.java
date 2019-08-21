@@ -36,6 +36,7 @@ import java.text.ParsePosition;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -537,6 +538,20 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
             withoutIPv4End();
             notEnclosingInBrackets();
             return this;
+        }
+
+        /**
+         * This method allows the application of a function to this builder object.
+         * <p>
+         * Any exception thrown by the function will be propagated to the caller.
+         *
+         * @param <R> The type of the result of the function.
+         * @param f The function to apply.
+         * @return The result of applying the function to this builder object.
+         * @since 1.3
+         */
+        public <R> R transform(Function<? super Builder<?>, ? extends R> f) {
+            return f.apply(this);
         }
 
         /**
