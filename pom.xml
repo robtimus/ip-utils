@@ -72,7 +72,7 @@
     <version.java>1.8</version.java>
 
     <version.hamcrest>2.2</version.hamcrest>
-    <version.junit>5.5.2</version.junit>
+    <version.junit>5.6.0</version.junit>
     <version.mockito>3.2.4</version.mockito>
     <version.try-parse>1.1</version.try-parse>
 
