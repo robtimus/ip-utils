@@ -70,11 +70,11 @@ public class IPv6AddressTest {
                 arguments(IPv6Address.MIN_VALUE, new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }),
                 arguments(IPv6Address.MAX_VALUE, new byte[] {
                         (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255,
-                        (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255
+                        (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255,
                 }),
                 arguments(IPv6Address.valueOf(0x1234, 0x5678, 0x90AB, 0xCDEF, 0x3456, 0x7890, 0xABCD, 0xEF12), new byte[] {
                         0x12, 0x34, 0x56, 0x78, (byte) 0x90, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF,
-                        0x34, 0x56, 0x78, (byte) 0x90, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF, 0x12
+                        0x34, 0x56, 0x78, (byte) 0x90, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF, 0x12,
                 }),
         };
     }
@@ -308,7 +308,7 @@ public class IPv6AddressTest {
                 arguments(IPv6Address.MAX_VALUE, false),
                 arguments(IPv6Address.valueOf(0xFE7F, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF), false),
                 arguments(IPv6Address.valueOf(0xFE80, 0, 0, 0, 0, 0, 0, 0), true),
-                arguments(IPv6Address.valueOf(0xFEBF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF , 0xFFFF, 0xFFFF), true),
+                arguments(IPv6Address.valueOf(0xFEBF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF), true),
                 arguments(IPv6Address.valueOf(0xFEC0, 0, 0, 0, 0, 0, 0, 0), false),
         };
     }
@@ -623,12 +623,12 @@ public class IPv6AddressTest {
                 dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> IPv6Address.valueOf((byte[]) null))),
                 testValueOfByteArray(new byte[] {
                         0x12, 0x34, 0x56, 0x78, (byte) 0x90, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF,
-                        0x34, 0x56, 0x78, (byte) 0x90, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF, 0x12
+                        0x34, 0x56, 0x78, (byte) 0x90, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF, 0x12,
                 }, IPv6Address.valueOf(0x1234567890ABCDEFL, 0x34567890ABCDEF12L)),
                 testValueOfByteArray(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, IPv6Address.MIN_VALUE),
                 testValueOfByteArray(new byte[] {
                         (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255,
-                        (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255
+                        (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255,
                 }, IPv6Address.MAX_VALUE),
                 testValueOfByteArrayOfInvalidSize(new byte[0]),
                 testValueOfByteArrayOfInvalidSize(new byte[4]),

@@ -50,12 +50,12 @@ public class IPAddressTest {
                 testValueOfByteArray(new byte[] { (byte) 255, (byte) 255, (byte) 255, (byte) 255 }, IPv4Address.MAX_VALUE),
                 testValueOfByteArray(new byte[] {
                         0x12, 0x34, 0x56, 0x78, (byte) 0x90, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF,
-                        0x34, 0x56, 0x78, (byte) 0x90, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF, 0x12
+                        0x34, 0x56, 0x78, (byte) 0x90, (byte) 0xAB, (byte) 0xCD, (byte) 0xEF, 0x12,
                 }, IPv6Address.valueOf(0x1234567890ABCDEFL, 0x34567890ABCDEF12L)),
                 testValueOfByteArray(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, IPv6Address.MIN_VALUE),
                 testValueOfByteArray(new byte[] {
                         (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255,
-                        (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255
+                        (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255, (byte) 255,
                 }, IPv6Address.MAX_VALUE),
                 testValueOfByteArrayOfInvalidLength(new byte[0]),
                 testValueOfByteArrayOfInvalidLength(new byte[3]),

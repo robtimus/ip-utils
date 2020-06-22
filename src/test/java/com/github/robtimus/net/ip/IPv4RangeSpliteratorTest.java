@@ -86,19 +86,19 @@ public class IPv4RangeSpliteratorTest {
                 testEstimateSize(IPv4Address.MIN_VALUE, IPv4Address.MAX_VALUE, spliterator -> {
                     long remaining = 1L << 32L;
                     assertEquals(remaining--, spliterator.estimateSize());
-                    spliterator.tryAdvance(ip -> { /* nothing */});
+                    spliterator.tryAdvance(ip -> { /* nothing */ });
                     assertEquals(remaining--, spliterator.estimateSize());
-                    spliterator.tryAdvance(ip -> { /* nothing */});
+                    spliterator.tryAdvance(ip -> { /* nothing */ });
                     assertEquals(remaining, spliterator.estimateSize());
                 }),
                 testEstimateSize(IPv4Address.LOCALHOST, IPv4Address.LOCALHOST, spliterator -> {
                     assertEquals(1, spliterator.estimateSize());
-                    spliterator.tryAdvance(ip -> { /* nothing */});
+                    spliterator.tryAdvance(ip -> { /* nothing */ });
                     assertEquals(0, spliterator.estimateSize());
                 }),
                 testEstimateSize(IPv4Address.MAX_VALUE, IPv4Address.MAX_VALUE, spliterator -> {
                     assertEquals(1, spliterator.estimateSize());
-                    spliterator.tryAdvance(ip -> { /* nothing */});
+                    spliterator.tryAdvance(ip -> { /* nothing */ });
                     assertEquals(0, spliterator.estimateSize());
                 }),
         };
