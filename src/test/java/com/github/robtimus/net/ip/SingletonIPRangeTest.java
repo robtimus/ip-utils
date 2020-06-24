@@ -45,12 +45,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-@SuppressWarnings({ "javadoc", "nls" })
-public class SingletonIPRangeTest {
+@SuppressWarnings("nls")
+class SingletonIPRangeTest {
 
     @Test
     @DisplayName("from and to")
-    public void testFromAndTo() {
+    void testFromAndTo() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<?> ipRange = new SingletonIPRange.IPv4(address);
         assertSame(address, ipRange.from());
@@ -59,7 +59,7 @@ public class SingletonIPRangeTest {
 
     @Test
     @DisplayName("size")
-    public void testSize() {
+    void testSize() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<?> ipRange = new SingletonIPRange.IPv4(address);
         assertEquals(1, ipRange.size());
@@ -68,7 +68,7 @@ public class SingletonIPRangeTest {
     @ParameterizedTest(name = "{1}")
     @MethodSource
     @DisplayName("contains")
-    public <IP extends IPAddress<IP>> void testContains(IPRange<IP> ipRange, IP address, boolean expected) {
+    <IP extends IPAddress<IP>> void testContains(IPRange<IP> ipRange, IP address, boolean expected) {
         assertEquals(expected, ipRange.contains(address));
         assertEquals(expected, ipRange.contains((Object) address));
     }
@@ -87,7 +87,7 @@ public class SingletonIPRangeTest {
 
     @Test
     @DisplayName("iterator")
-    public void testIterator() {
+    void testIterator() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new SingletonIPRange.IPv4(address);
         Iterator<IPv4Address> iterator = ipRange.iterator();
@@ -99,7 +99,7 @@ public class SingletonIPRangeTest {
 
     @TestFactory
     @DisplayName("toArray")
-    public DynamicTest[] testToArray() {
+    DynamicTest[] testToArray() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<?> ipRange = new SingletonIPRange.IPv4(address);
         return new DynamicTest[] {
@@ -133,7 +133,7 @@ public class SingletonIPRangeTest {
     @ParameterizedTest(name = "{1}")
     @MethodSource
     @DisplayName("containsAll")
-    public void testContainsAll(IPRange<?> ipRange, Collection<?> c, boolean expected) {
+    void testContainsAll(IPRange<?> ipRange, Collection<?> c, boolean expected) {
         assertEquals(expected, ipRange.containsAll(c));
     }
 
@@ -153,7 +153,7 @@ public class SingletonIPRangeTest {
     @ParameterizedTest(name = "{1}")
     @MethodSource
     @DisplayName("equals")
-    public void testEquals(IPRange<?> ipRange, Object object, boolean expected) {
+    void testEquals(IPRange<?> ipRange, Object object, boolean expected) {
         assertEquals(expected, ipRange.equals(object));
     }
 
@@ -174,7 +174,7 @@ public class SingletonIPRangeTest {
 
     @Test
     @DisplayName("hashCode")
-    public void testHashCode() {
+    void testHashCode() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<?> ipRange = new SingletonIPRange.IPv4(address);
         assertEquals(ipRange.hashCode(), ipRange.hashCode());
@@ -183,7 +183,7 @@ public class SingletonIPRangeTest {
 
     @Test
     @DisplayName("toString")
-    public void testToString() {
+    void testToString() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<?> ipRange = new SingletonIPRange.IPv4(address);
         assertEquals("[127.0.0.1]", ipRange.toString());
@@ -193,7 +193,7 @@ public class SingletonIPRangeTest {
 
     @Test
     @DisplayName("forEach")
-    public void testForEach() {
+    void testForEach() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<?> ipRange = new SingletonIPRange.IPv4(address);
         @SuppressWarnings("unchecked")
@@ -206,7 +206,7 @@ public class SingletonIPRangeTest {
     @Test
     @DisplayName("spliterator")
     @SuppressWarnings("unchecked")
-    public void testSpliterator() {
+    void testSpliterator() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<?> ipRange = new SingletonIPRange.IPv4(address);
 

@@ -47,7 +47,7 @@ final class Bytes {
     private static final int INT_OTHER_BITS = ~INT_SIGN_BIT;
 
     private Bytes() {
-        throw new Error("cannot create instances of " + getClass().getName()); //$NON-NLS-1$
+        throw new IllegalStateException("cannot create instances of " + getClass().getName()); //$NON-NLS-1$
     }
 
     static byte[] intToAddress(int address) {

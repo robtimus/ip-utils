@@ -31,13 +31,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-@SuppressWarnings({ "javadoc", "nls" })
-public class IPv4SubnetTest {
+@SuppressWarnings("nls")
+class IPv4SubnetTest {
 
     @ParameterizedTest(name = "{0}/{1}: {2}")
     @MethodSource
     @DisplayName("size")
-    public void testSize(IPv4Address address, int prefixLength, int expectedSize) {
+    void testSize(IPv4Address address, int prefixLength, int expectedSize) {
         IPv4Subnet subnet = address.startingSubnet(prefixLength);
         assertEquals(expectedSize, subnet.size());
         assertEquals(expectedSize, subnet.size());
@@ -62,7 +62,7 @@ public class IPv4SubnetTest {
 
     @Test
     @DisplayName("spliterator")
-    public void testSpliterator() {
+    void testSpliterator() {
         IPv4Subnet subnet = IPv4Address.MIN_VALUE.startingSubnet(0);
         Spliterator<?> spliterator = subnet.spliterator();
         // IPv4RangeSpliterator has its own tests
@@ -71,7 +71,7 @@ public class IPv4SubnetTest {
 
     @TestFactory
     @DisplayName("valueOf(CharSequence) and valueOf(CharSequence, int, int)")
-    public DynamicTest[] testValueOfCIDRNotation() {
+    DynamicTest[] testValueOfCIDRNotation() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> {
                     assertThrows(NullPointerException.class, () -> IPv4Subnet.valueOf(null));
@@ -152,7 +152,7 @@ public class IPv4SubnetTest {
 
     @TestFactory
     @DisplayName("tryValueOfIPv4")
-    public DynamicTest[] testTryValueOfIPv4() {
+    DynamicTest[] testTryValueOfIPv4() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> {
                     assertEquals(Optional.empty(), IPv4Subnet.tryValueOfIPv4(null));
@@ -195,7 +195,7 @@ public class IPv4SubnetTest {
 
     @TestFactory
     @DisplayName("valueOf(CharSequence, int) and valueOf(IPv4Address, int)")
-    public DynamicTest[] testValueOfWithIPAddress() {
+    DynamicTest[] testValueOfWithIPAddress() {
         CharSequence address = "192.168.171.13";
         return new DynamicTest[] {
                 dynamicTest("null CharSequence", () -> assertThrows(NullPointerException.class, () -> IPv4Subnet.valueOf((CharSequence) null, 1))),
@@ -242,7 +242,7 @@ public class IPv4SubnetTest {
 
     @TestFactory
     @DisplayName("valueOf(CharSequence, Charsequence) and valueOf(IPv4Address, IPv4Address)")
-    public DynamicTest[] testValueOfWithIPAddressWithNetmask() {
+    DynamicTest[] testValueOfWithIPAddressWithNetmask() {
         CharSequence address = "192.168.171.13";
         return new DynamicTest[] {
                 dynamicTest("null CharSequence", () -> assertThrows(NullPointerException.class, () -> IPv4Subnet.valueOf(null, "0.0.0.0"))),
@@ -292,7 +292,7 @@ public class IPv4SubnetTest {
 
     @TestFactory
     @DisplayName("isIPv4Subnet")
-    public DynamicTest[] testIsIPv4Subnet() {
+    DynamicTest[] testIsIPv4Subnet() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> {
                     assertEquals(false, IPv4Subnet.isIPv4Subnet(null));

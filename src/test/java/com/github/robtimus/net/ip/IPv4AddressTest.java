@@ -48,19 +48,19 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-@SuppressWarnings({ "javadoc", "nls" })
-public class IPv4AddressTest {
+@SuppressWarnings("nls")
+class IPv4AddressTest {
 
     @Test
     @DisplayName("bits")
-    public void testBits() {
+    void testBits() {
         assertEquals(32, IPv4Address.LOCALHOST.bits());
     }
 
     @ParameterizedTest(name = "{0}")
     @MethodSource
     @DisplayName("toByteArray")
-    public void testToByteArray(IPv4Address address, byte[] expected) {
+    void testToByteArray(IPv4Address address, byte[] expected) {
         assertArrayEquals(expected, address.toByteArray());
     }
 
@@ -76,7 +76,7 @@ public class IPv4AddressTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource
     @DisplayName("toInetAddress")
-    public void testToInetAddress(IPv4Address address, String expected) throws UnknownHostException {
+    void testToInetAddress(IPv4Address address, String expected) throws UnknownHostException {
         assertEquals(InetAddress.getByName(expected), address.toInetAddress());
         // test caching
         assertSame(address.toInetAddress(), address.toInetAddress());
@@ -93,7 +93,7 @@ public class IPv4AddressTest {
 
     @Test
     @DisplayName("toIPv6")
-    public void testToIPv6() {
+    void testToIPv6() {
         IPv4Address address = IPv4Address.valueOf(192, 168, 1, 13);
         IPv6Address result = address.toIPv6();
         assertEquals(IPv6Address.valueOf(0, 0x0000_FFFF_C0A8_010DL), result);
@@ -103,7 +103,7 @@ public class IPv4AddressTest {
     @ParameterizedTest(name = "{1}")
     @MethodSource
     @DisplayName("equals")
-    public void testEquals(IPv4Address address, Object object, boolean expectEquals) {
+    void testEquals(IPv4Address address, Object object, boolean expectEquals) {
         BiConsumer<Object, Object> equalsCheck = expectEquals ? Assertions::assertEquals : Assertions::assertNotEquals;
         equalsCheck.accept(address, object);
     }
@@ -126,7 +126,7 @@ public class IPv4AddressTest {
     @ParameterizedTest(name = "{1}")
     @MethodSource
     @DisplayName("hashCode")
-    public void testHashCode(IPv4Address address, IPv4Address other, boolean expectEquals) {
+    void testHashCode(IPv4Address address, IPv4Address other, boolean expectEquals) {
         BiConsumer<Integer, Integer> equalsCheck = expectEquals ? Assertions::assertEquals : Assertions::assertNotEquals;
         equalsCheck.accept(address.hashCode(), other.hashCode());
     }
@@ -146,7 +146,7 @@ public class IPv4AddressTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource
     @DisplayName("toString")
-    public void testToString(IPv4Address address, String expected) {
+    void testToString(IPv4Address address, String expected) {
         assertEquals(expected, address.toString());
         // test caching
         assertSame(address.toString(), address.toString());
@@ -163,7 +163,7 @@ public class IPv4AddressTest {
 
     @TestFactory
     @DisplayName("compareTo")
-    public DynamicTest[] testCompareTo() {
+    DynamicTest[] testCompareTo() {
         IPv4Address address = IPv4Address.valueOf(12, 34, 56, 78);
         return new DynamicTest[] {
                 testCompareToEqual(IPv4Address.LOCALHOST, IPv4Address.LOCALHOST),
@@ -183,7 +183,7 @@ public class IPv4AddressTest {
     }
 
     private DynamicTest testCompareToEqual(IPv4Address address, IPv4Address other) {
-        return dynamicTest(other.toString(), () -> assertTrue(address.compareTo(other) == 0));
+        return dynamicTest(other.toString(), () -> assertEquals(0, address.compareTo(other)));
     }
 
     private DynamicTest testCompareToSmaller(IPv4Address address, IPv4Address other) {
@@ -197,7 +197,7 @@ public class IPv4AddressTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource
     @DisplayName("isMulticastAddress")
-    public void testIsMulticastAddress(IPv4Address address, boolean expected) {
+    void testIsMulticastAddress(IPv4Address address, boolean expected) {
         assertEquals(expected, address.isMulticastAddress());
     }
 
@@ -218,7 +218,7 @@ public class IPv4AddressTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource
     @DisplayName("isWildcardAddress")
-    public void testIsWildcardAddress(IPv4Address address, boolean expected) {
+    void testIsWildcardAddress(IPv4Address address, boolean expected) {
         assertEquals(expected, address.isWildcardAddress());
     }
 
@@ -234,7 +234,7 @@ public class IPv4AddressTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource
     @DisplayName("isLoopbackAddress")
-    public void testIsLoopbackAddress(IPv4Address address, boolean expected) {
+    void testIsLoopbackAddress(IPv4Address address, boolean expected) {
         assertEquals(expected, address.isLoopbackAddress());
     }
 
@@ -253,7 +253,7 @@ public class IPv4AddressTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource
     @DisplayName("isLinkLocalAddress")
-    public void testIsLinkLocalAddress(IPv4Address address, boolean expected) {
+    void testIsLinkLocalAddress(IPv4Address address, boolean expected) {
         assertEquals(expected, address.isLinkLocalAddress());
     }
 
@@ -272,7 +272,7 @@ public class IPv4AddressTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource
     @DisplayName("isSiteLocalAddress")
-    public void testIsSiteLocalAddress(IPv4Address address, boolean expected) {
+    void testIsSiteLocalAddress(IPv4Address address, boolean expected) {
         assertEquals(expected, address.isSiteLocalAddress());
     }
 
@@ -301,7 +301,7 @@ public class IPv4AddressTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource
     @DisplayName("hasNext")
-    public void testHasNext(IPv4Address address, boolean expected) {
+    void testHasNext(IPv4Address address, boolean expected) {
         assertEquals(expected, address.hasNext());
     }
 
@@ -316,7 +316,7 @@ public class IPv4AddressTest {
 
     @TestFactory
     @DisplayName("next")
-    public DynamicTest[] testNext() {
+    DynamicTest[] testNext() {
         return new DynamicTest[] {
                 testNext(IPv4Address.LOCALHOST, IPv4Address.valueOf(127, 0, 0, 2)),
                 testNext(IPv4Address.MIN_VALUE, IPv4Address.valueOf(0, 0, 0, 1)),
@@ -333,7 +333,7 @@ public class IPv4AddressTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource
     @DisplayName("hasPrevious")
-    public void testHasPrevious(IPv4Address address, boolean expected) {
+    void testHasPrevious(IPv4Address address, boolean expected) {
         assertEquals(expected, address.hasPrevious());
     }
 
@@ -348,7 +348,7 @@ public class IPv4AddressTest {
 
     @TestFactory
     @DisplayName("previous")
-    public DynamicTest[] testPrevious() {
+    DynamicTest[] testPrevious() {
         return new DynamicTest[] {
                 testPrevious(IPv4Address.LOCALHOST, IPv4Address.valueOf(127, 0, 0, 0)),
                 testPrevious(IPv4Address.MAX_VALUE, IPv4Address.valueOf(255, 255, 255, 254)),
@@ -365,7 +365,7 @@ public class IPv4AddressTest {
     @ParameterizedTest(name = "{0}.mid({1})")
     @MethodSource
     @DisplayName("mid")
-    public void testMid(IPv4Address low, IPv4Address high, IPv4Address expected) {
+    void testMid(IPv4Address low, IPv4Address high, IPv4Address expected) {
         assertEquals(expected, low.mid(high));
     }
 
@@ -384,7 +384,7 @@ public class IPv4AddressTest {
 
     @TestFactory
     @DisplayName("to")
-    public DynamicTest[] testTo() {
+    DynamicTest[] testTo() {
         // Don't test the range itself, only its to and from values. The range has its own tests.
         return new DynamicTest[] {
                 dynamicTest("MIN_VALUE to MAX_VALUE", () -> {
@@ -409,7 +409,7 @@ public class IPv4AddressTest {
 
     @Test
     @DisplayName("asRange")
-    public void testAsRange() {
+    void testAsRange() {
         // Don't test the range itself, only its to and from values. The range has its own tests.
         IPv4Range range = IPv4Address.MIN_VALUE.asRange();
         assertEquals(IPv4Address.MIN_VALUE, range.from());
@@ -419,7 +419,7 @@ public class IPv4AddressTest {
 
     @TestFactory
     @DisplayName("inSubnet")
-    public DynamicTest[] testInSubnet() {
+    DynamicTest[] testInSubnet() {
         IPv4Address address = IPv4Address.valueOf(192, 168, 171, 13);
         return new DynamicTest[] {
                 testInSubnet(IPv4Address.LOCALHOST, 0, IPv4Address.MIN_VALUE, IPv4Address.MAX_VALUE),
@@ -453,7 +453,7 @@ public class IPv4AddressTest {
 
     @TestFactory
     @DisplayName("startingSubnet(int)")
-    public DynamicTest[] testStartingSubnet() {
+    DynamicTest[] testStartingSubnet() {
         IPv4Address address = IPv4Address.valueOf(192, 168, 171, 13);
         return new DynamicTest[] {
                 testStartingSubnetInvalidRoutingPrefix(IPv4Address.LOCALHOST, 0),
@@ -501,7 +501,7 @@ public class IPv4AddressTest {
 
     @TestFactory
     @DisplayName("startingSubnet(IPv4Address)")
-    public DynamicTest[] testStartingSubnetWithIPv4Address() {
+    DynamicTest[] testStartingSubnetWithIPv4Address() {
         return new DynamicTest[] {
                 testStartingSubnet(IPv4Address.LOCALHOST, IPv4Address.MAX_VALUE, IPv4Address.LOCALHOST),
                 testStartingSubnet(IPv4Address.MIN_VALUE, IPv4Address.MIN_VALUE, IPv4Address.MAX_VALUE),
@@ -534,7 +534,7 @@ public class IPv4AddressTest {
 
     @TestFactory
     @DisplayName("valueOf(int, int, int, int)")
-    public DynamicTest[] testValueOfOctets() {
+    DynamicTest[] testValueOfOctets() {
         return new DynamicTest[] {
                 testValueOfOctets(0x12, 0x34, 0x56, 0x78, IPv4Address.valueOf(0x12345678)),
                 testValueOfOctets(0, 0, 0, 0, IPv4Address.MIN_VALUE),
@@ -565,7 +565,7 @@ public class IPv4AddressTest {
 
     @TestFactory
     @DisplayName("valueOf(byte[])")
-    public DynamicTest[] testValueOfByteArray() {
+    DynamicTest[] testValueOfByteArray() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> IPv4Address.valueOf((byte[]) null))),
                 testValueOfByteArray(new byte[] { 0x12, 0x34, 0x56, 0x78 }, IPv4Address.valueOf(0x12345678)),
@@ -591,7 +591,7 @@ public class IPv4AddressTest {
 
     @TestFactory
     @DisplayName("valueOf(CharSequence) and valueOf(CharSequence, int, int)")
-    public DynamicTest[] testValueOfCharSequence() {
+    DynamicTest[] testValueOfCharSequence() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> {
                     assertThrows(NullPointerException.class, () -> IPv4Address.valueOf((CharSequence) null));
@@ -634,7 +634,7 @@ public class IPv4AddressTest {
 
     @TestFactory
     @DisplayName("tryValueOf")
-    public DynamicTest[] testTryValueOf() {
+    DynamicTest[] testTryValueOf() {
         return new DynamicTest[] {
                 testTryValueOf(null, Optional.empty()),
                 testTryValueOf("", Optional.empty()),
@@ -663,7 +663,7 @@ public class IPv4AddressTest {
 
     @TestFactory
     @DisplayName("valueOf(Inet4Address)")
-    public DynamicTest[] testValueOfInetAddress() {
+    DynamicTest[] testValueOfInetAddress() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> IPAddress.valueOf((InetAddress) null))),
                 testValueOfInetAddress("127.0.0.1", IPv4Address.LOCALHOST),
@@ -679,7 +679,7 @@ public class IPv4AddressTest {
 
     @TestFactory
     @DisplayName("getNetmask")
-    public DynamicTest[] testGetNetmask() {
+    DynamicTest[] testGetNetmask() {
         return new DynamicTest[] {
                 testGetNetmask(0, 0b00000000_00000000_00000000_00000000),
                 testGetNetmask(1, 0b10000000_00000000_00000000_00000000),
@@ -733,7 +733,7 @@ public class IPv4AddressTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource
     @DisplayName("isValidNetmask")
-    public void testIsValidNetmask(IPv4Address address, boolean expected) {
+    void testIsValidNetmask(IPv4Address address, boolean expected) {
         assertEquals(expected, address.isValidNetmask());
     }
 
@@ -761,7 +761,7 @@ public class IPv4AddressTest {
 
     @TestFactory
     @DisplayName("isIPv4Address")
-    public DynamicTest[] testIsIPv4Address() {
+    DynamicTest[] testIsIPv4Address() {
         return new DynamicTest[] {
                 testIsIPv4Address(null, false),
                 testIsIPv4Address("", false),
@@ -781,7 +781,7 @@ public class IPv4AddressTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource
     @DisplayName("ifValidIPv4Address")
-    public void testIfValidIPv4Address(String s, IPv4Address expected) {
+    void testIfValidIPv4Address(String s, IPv4Address expected) {
         testIfValidIPv4Address(s, expected, true);
         testIfValidIPv4Address(s, expected, false);
     }

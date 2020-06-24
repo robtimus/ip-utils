@@ -34,12 +34,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-@SuppressWarnings("javadoc")
-public class IPv6RangeSpliteratorTest {
+class IPv6RangeSpliteratorTest {
 
     @Test
     @DisplayName("trySplit")
-    public void testTrySplit() {
+    void testTrySplit() {
         IPv6RangeSpliterator spliterator = new IPv6RangeSpliterator(IPv6Address.MIN_VALUE.to(IPv6Address.MAX_VALUE));
 
         IPv6RangeSpliterator split = spliterator.trySplit();
@@ -85,7 +84,7 @@ public class IPv6RangeSpliteratorTest {
 
     @TestFactory
     @DisplayName("estimateSize")
-    public DynamicTest[] testEstimateSize() {
+    DynamicTest[] testEstimateSize() {
         return new DynamicTest[] {
                 testEstimateSize(IPv6Address.MIN_VALUE.to(IPv6Address.MAX_VALUE), spliterator -> {
                     assertEquals(Long.MAX_VALUE, spliterator.estimateSize());
@@ -150,7 +149,7 @@ public class IPv6RangeSpliteratorTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource
     @DisplayName("characteristics")
-    public void testCharacteristics(IPRange<IPv6Address> ipRange, boolean sized) {
+    void testCharacteristics(IPRange<IPv6Address> ipRange, boolean sized) {
         IPv6RangeSpliterator spliterator = new IPv6RangeSpliterator(ipRange);
         assertTrue(spliterator.hasCharacteristics(Spliterator.ORDERED));
         assertTrue(spliterator.hasCharacteristics(Spliterator.DISTINCT));

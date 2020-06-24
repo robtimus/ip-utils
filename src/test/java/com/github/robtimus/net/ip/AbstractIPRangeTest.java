@@ -27,13 +27,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-@SuppressWarnings({ "javadoc", "nls" })
-public class AbstractIPRangeTest {
+@SuppressWarnings("nls")
+class AbstractIPRangeTest {
 
     @ParameterizedTest(name = "{1}")
     @MethodSource
     @DisplayName("equals")
-    public void testEquals(IPRange<?> ipRange, Object object, boolean expectEquals) {
+    void testEquals(IPRange<?> ipRange, Object object, boolean expectEquals) {
         BiConsumer<Object, Object> equalsCheck = expectEquals ? Assertions::assertEquals : Assertions::assertNotEquals;
         equalsCheck.accept(ipRange, object);
     }
@@ -55,7 +55,7 @@ public class AbstractIPRangeTest {
 
     @Test
     @DisplayName("hashCode")
-    public void testHashCode() {
+    void testHashCode() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
         assertEquals(ipRange.hashCode(), ipRange.hashCode());

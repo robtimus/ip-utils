@@ -57,13 +57,13 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import com.github.robtimus.net.ip.IPAddressFormatter.Builder;
 
-@SuppressWarnings({ "javadoc", "nls" })
-public class IPAddressFormatterTest {
+@SuppressWarnings("nls")
+class IPAddressFormatterTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource
     @DisplayName("ipv6")
-    public void testIPv6(@SuppressWarnings("unused") String displayName, Builder<IPv6Address> builder, IPv6Address address, String expected) {
+    void testIPv6(@SuppressWarnings("unused") String displayName, Builder<IPv6Address> builder, IPv6Address address, String expected) {
         IPAddressFormatter<IPv6Address> formatter = builder.build();
         assertEquals(expected, formatter.format(address));
     }
@@ -80,7 +80,7 @@ public class IPAddressFormatterTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource
     @DisplayName("anyVersion")
-    public void testAnyVersion(@SuppressWarnings("unused") String displayName, Builder<IPAddress<?>> builder, IPv6Address ipv6Address,
+    void testAnyVersion(@SuppressWarnings("unused") String displayName, Builder<IPAddress<?>> builder, IPv6Address ipv6Address,
             String expectedIPv6) {
 
         IPAddressFormatter<IPAddress<?>> formatter = builder.build();
@@ -99,11 +99,11 @@ public class IPAddressFormatterTest {
 
     @Nested
     @DisplayName("Builder")
-    public class BuilderTest {
+    class BuilderTest {
 
         @Test
         @DisplayName("transform")
-        public void testTransform() {
+        void testTransform() {
             IPAddressFormatter.Builder<IPv6Address> builder = IPAddressFormatter.ipv6();
             @SuppressWarnings("unchecked")
             Function<IPAddressFormatter.Builder<?>, String> f = mock(Function.class);
@@ -116,11 +116,11 @@ public class IPAddressFormatterTest {
     }
 
     @Nested
-    public class IPv4 {
+    class IPv4 {
 
         @TestFactory
         @DisplayName("format(IPv4Address)")
-        public DynamicTest[] testFormatIPv4Address() {
+        DynamicTest[] testFormatIPv4Address() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
                     dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> formatter.format((IPv4Address) null))),
@@ -138,7 +138,7 @@ public class IPAddressFormatterTest {
 
         @TestFactory
         @DisplayName("format(byte[])")
-        public DynamicTest[] testFormatBytes() {
+        DynamicTest[] testFormatBytes() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
                     dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> formatter.format((byte[]) null))),
@@ -167,7 +167,7 @@ public class IPAddressFormatterTest {
 
         @TestFactory
         @DisplayName("append(IPv4Address)")
-        public DynamicTest[] testAppendIPv4Address() {
+        DynamicTest[] testAppendIPv4Address() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
                     dynamicTest("null",
@@ -190,7 +190,7 @@ public class IPAddressFormatterTest {
 
         @TestFactory
         @DisplayName("append(byte[])")
-        public DynamicTest[] testAppendBytes() {
+        DynamicTest[] testAppendBytes() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
                     dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> formatter.append((byte[]) null, new StringWriter()))),
@@ -226,7 +226,7 @@ public class IPAddressFormatterTest {
 
         @TestFactory
         @DisplayName("parse(CharSequence) and parse(CharSequence, int, int)")
-        public DynamicTest[] testParse() {
+        DynamicTest[] testParse() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
                     dynamicTest("null", () -> {
@@ -278,7 +278,7 @@ public class IPAddressFormatterTest {
 
         @TestFactory
         @DisplayName("parse(CharSequence, ParsePosition)")
-        public DynamicTest[] testParseWithPosition() {
+        DynamicTest[] testParseWithPosition() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
                     dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> formatter.parse(null, new ParsePosition(0)))),
@@ -354,7 +354,7 @@ public class IPAddressFormatterTest {
 
         @TestFactory
         @DisplayName("tryParse")
-        public DynamicTest[] testTryParse() {
+        DynamicTest[] testTryParse() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
                     dynamicTest("null", () -> {
@@ -392,7 +392,7 @@ public class IPAddressFormatterTest {
 
         @TestFactory
         @DisplayName("parseToBytes(CharSequence) and parseToBytes(CharSequence, int, int)")
-        public DynamicTest[] testParseToBytes() {
+        DynamicTest[] testParseToBytes() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
                     dynamicTest("null", () -> {
@@ -444,7 +444,7 @@ public class IPAddressFormatterTest {
 
         @TestFactory
         @DisplayName("parseToBytes(CharSequence, ParsePosition)")
-        public DynamicTest[] testParseToBytesWithPosition() {
+        DynamicTest[] testParseToBytesWithPosition() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
                     dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> formatter.parse(null, new ParsePosition(0)))),
@@ -522,7 +522,7 @@ public class IPAddressFormatterTest {
 
         @TestFactory
         @DisplayName("tryParseToBytes")
-        public DynamicTest[] testTryParseToBytes() {
+        DynamicTest[] testTryParseToBytes() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
                     dynamicTest("null", () -> {
@@ -570,11 +570,11 @@ public class IPAddressFormatterTest {
 
         @Nested
         @DisplayName("asFormat")
-        public class AsFormat {
+        class AsFormat {
 
             @TestFactory
             @DisplayName("format")
-            public DynamicTest[] testFormat() {
+            DynamicTest[] testFormat() {
                 IPAddressFormat<IPv4Address> format = IPAddressFormatter.ipv4().asFormat();
                 return new DynamicTest[] {
                         testFormat(format, IPv4Address.LOCALHOST, "127.0.0.1"),
@@ -621,7 +621,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("parseObject(String)")
-            public DynamicTest[] testParseObject() {
+            DynamicTest[] testParseObject() {
                 IPAddressFormat<IPv4Address> format = IPAddressFormatter.ipv4().asFormat();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> format.parseObject(null))),
@@ -655,7 +655,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("parseObject(String, ParsePosition)")
-            public DynamicTest[] testParseObjectWithPosition() {
+            DynamicTest[] testParseObjectWithPosition() {
                 IPAddressFormat<IPv4Address> format = IPAddressFormatter.ipv4().asFormat();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> format.parseObject(null, new ParsePosition(0)))),
@@ -735,7 +735,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("parse(CharSequence)")
-            public DynamicTest[] testParse() {
+            DynamicTest[] testParse() {
                 IPAddressFormat<IPv4Address> format = IPAddressFormatter.ipv4().asFormat();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> format.parse(null))),
@@ -768,7 +768,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("equals")
-            public DynamicTest[] testEquals() {
+            DynamicTest[] testEquals() {
                 IPAddressFormat<IPv4Address> format = IPAddressFormatter.ipv4().asFormat();
                 return new DynamicTest[] {
                         testEquals(format, format, true),
@@ -784,7 +784,7 @@ public class IPAddressFormatterTest {
 
             @Test
             @DisplayName("toString")
-            public void testToString() {
+            void testToString() {
                 IPAddressFormat<IPv4Address> format = IPAddressFormatter.ipv4().asFormat();
                 assertEquals(IPAddressFormat.class.getName() + "#IPv4", format.toString());
             }
@@ -792,7 +792,7 @@ public class IPAddressFormatterTest {
             @Test
             @DisplayName("clone")
             @SuppressWarnings({ "deprecation", "unchecked" })
-            public void testClone() {
+            void testClone() {
                 IPAddressFormat<IPv4Address> format = IPAddressFormatter.ipv4().asFormat();
                 IPAddressFormat<IPv4Address> clone = (IPAddressFormat<IPv4Address>) format.clone();
                 assertNotSame(format, clone);
@@ -803,7 +803,7 @@ public class IPAddressFormatterTest {
 
             @Test
             @DisplayName("serialization")
-            public void testSerialization() throws IOException, ClassNotFoundException {
+            void testSerialization() throws IOException, ClassNotFoundException {
                 IPAddressFormat<IPv4Address> format = IPAddressFormatter.ipv4().asFormat();
                 IPAddressFormat<IPv4Address> copy = assertSerializable(format);
                 assertSame(format, copy);
@@ -812,7 +812,7 @@ public class IPAddressFormatterTest {
 
         @TestFactory
         @DisplayName("isValid")
-        public DynamicTest[] testIsValid() {
+        DynamicTest[] testIsValid() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
                     dynamicTest("null", () -> assertEquals(false, formatter.isValid(null, 0, 0))),
@@ -847,7 +847,7 @@ public class IPAddressFormatterTest {
 
         @TestFactory
         @DisplayName("ifValid")
-        public DynamicTest[] testTestIfValid() {
+        DynamicTest[] testTestIfValid() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             return new DynamicTest[] {
                     testTestIfValid(formatter, null, null),
@@ -892,14 +892,14 @@ public class IPAddressFormatterTest {
 
         @Test
         @DisplayName("toString")
-        public void testToString() {
+        void testToString() {
             IPAddressFormatter<IPv4Address> formatter = IPAddressFormatter.ipv4();
             assertEquals(IPAddressFormatter.class.getName() + "#IPv4", formatter.toString());
         }
     }
 
     @Nested
-    public class IPv6 {
+    class IPv6 {
 
         private final IPv6Address testAddress1 = IPv6Address.valueOf(0L, 0L);
         private final IPv6Address testAddress2 = IPv6Address.valueOf(0L, 1L);
@@ -915,7 +915,7 @@ public class IPAddressFormatterTest {
 
         @TestFactory
         @DisplayName("format specific")
-        public DynamicContainer[] testFormatSpecific() {
+        DynamicContainer[] testFormatSpecific() {
             return new DynamicContainer[] {
                     testFormatSpecific(IPAddressFormatter.ipv6()
                             .withShortStyle()
@@ -1397,13 +1397,13 @@ public class IPAddressFormatterTest {
 
         @Nested
         @DisplayName("format agnostic")
-        public class FormatAgnostic {
+        class FormatAgnostic {
 
             // valueOf is tested through IPv6AddressTest.testValueOfCharSequence
 
             @TestFactory
             @DisplayName("parse(CharSequence) and parse(CharSequence, int, int)")
-            public DynamicTest[] testParse() {
+            DynamicTest[] testParse() {
                 IPAddressFormatter<IPv6Address> formatter = IPAddressFormatter.ipv6WithDefaults();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> {
@@ -1528,7 +1528,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("parse(CharSequence, ParsePosition)")
-            public DynamicTest[] testParseWithPosition() {
+            DynamicTest[] testParseWithPosition() {
                 IPAddressFormatter<IPv6Address> formatter = IPAddressFormatter.ipv6WithDefaults();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> formatter.parse(null))),
@@ -1685,7 +1685,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("tryParse")
-            public DynamicTest[] testTryParse() {
+            DynamicTest[] testTryParse() {
                 IPAddressFormatter<IPv6Address> formatter = IPAddressFormatter.ipv6WithDefaults();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> {
@@ -1815,7 +1815,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("parseToBytes(CharSequence) and parseToBytes(CharSequence, int, int)")
-            public DynamicTest[] testParseToBytes() {
+            DynamicTest[] testParseToBytes() {
                 IPAddressFormatter<IPv6Address> formatter = IPAddressFormatter.ipv6WithDefaults();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> {
@@ -2053,7 +2053,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("parseToBytes(CharSequence, ParsePosition)")
-            public DynamicTest[] testParseToBytesWithPosition() {
+            DynamicTest[] testParseToBytesWithPosition() {
                 IPAddressFormatter<IPv6Address> formatter = IPAddressFormatter.ipv6WithDefaults();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> formatter.parse(null, new ParsePosition(0)))),
@@ -2321,7 +2321,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("tryParseToBytes")
-            public DynamicTest[] testTryParseToBytes() {
+            DynamicTest[] testTryParseToBytes() {
                 IPAddressFormatter<IPv6Address> formatter = IPAddressFormatter.ipv6WithDefaults();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> {
@@ -2557,11 +2557,11 @@ public class IPAddressFormatterTest {
 
             @Nested
             @DisplayName("asFormat")
-            public class AsFormat {
+            class AsFormat {
 
                 @TestFactory
                 @DisplayName("parseObject(String)")
-                public DynamicTest[] testParseObject() {
+                DynamicTest[] testParseObject() {
                     IPAddressFormat<IPv6Address> format = IPAddressFormatter.ipv6WithDefaults().asFormat();
                     return new DynamicTest[] {
                             dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> format.parseObject(null))),
@@ -2669,7 +2669,7 @@ public class IPAddressFormatterTest {
 
                 @TestFactory
                 @DisplayName("parseObject(String, ParsePosition)")
-                public DynamicTest[] testParseObjectWithPosition() {
+                DynamicTest[] testParseObjectWithPosition() {
                     IPAddressFormat<IPv6Address> format = IPAddressFormatter.ipv6WithDefaults().asFormat();
                     return new DynamicTest[] {
                             dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> format.parseObject(null))),
@@ -2841,7 +2841,7 @@ public class IPAddressFormatterTest {
 
                 @TestFactory
                 @DisplayName("parse(CharSequence)")
-                public DynamicTest[] testParse() {
+                DynamicTest[] testParse() {
                     IPAddressFormat<IPv6Address> format = IPAddressFormatter.ipv6WithDefaults().asFormat();
                     return new DynamicTest[] {
                             dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> format.parse(null))),
@@ -2948,7 +2948,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("isValid")
-            public DynamicTest[] testIsValid() {
+            DynamicTest[] testIsValid() {
                 IPAddressFormatter<IPv6Address> formatter = IPAddressFormatter.ipv6WithDefaults();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> assertEquals(false, formatter.isValid(null, 0, 0))),
@@ -3056,7 +3056,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("testIfValid")
-            public DynamicTest[] testTestIfValid() {
+            DynamicTest[] testTestIfValid() {
                 IPAddressFormatter<IPv6Address> formatter = IPAddressFormatter.ipv6WithDefaults();
                 return new DynamicTest[] {
                         testTestIfValid(formatter, null, null),
@@ -3176,7 +3176,7 @@ public class IPAddressFormatterTest {
     }
 
     @Nested
-    public class AnyVersion {
+    class AnyVersion {
 
         private final IPv6Address testAddress1 = IPv6Address.valueOf(0L, 0L);
         private final IPv6Address testAddress2 = IPv6Address.valueOf(0L, 1L);
@@ -3192,7 +3192,7 @@ public class IPAddressFormatterTest {
 
         @TestFactory
         @DisplayName("format specific")
-        public DynamicContainer[] testFormatSpecific() {
+        DynamicContainer[] testFormatSpecific() {
             return new DynamicContainer[] {
                     testFormatSpecific(IPAddressFormatter.anyVersion()
                             .withShortStyle()
@@ -3732,13 +3732,13 @@ public class IPAddressFormatterTest {
 
         @Nested
         @DisplayName("format agnostic")
-        public class FormatAgnostic {
+        class FormatAgnostic {
 
             // valueOf is tested through IPAddressTest.testValueOfCharSequence
 
             @TestFactory
             @DisplayName("parse(CharSequence) and parse(CharSequence, int, int)")
-            public DynamicTest[] testParse() {
+            DynamicTest[] testParse() {
                 IPAddressFormatter<IPAddress<?>> formatter = IPAddressFormatter.anyVersionWithDefaults();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> {
@@ -3879,7 +3879,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("parse(CharSequence, ParsePosition)")
-            public DynamicTest[] testParseWithPosition() {
+            DynamicTest[] testParseWithPosition() {
                 IPAddressFormatter<IPAddress<?>> formatter = IPAddressFormatter.anyVersionWithDefaults();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> formatter.parse(null))),
@@ -4052,7 +4052,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("tryParse")
-            public DynamicTest[] testTryParse() {
+            DynamicTest[] testTryParse() {
                 IPAddressFormatter<IPAddress<?>> formatter = IPAddressFormatter.anyVersionWithDefaults();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> {
@@ -4198,7 +4198,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("parseToBytes(CharSequence) and parseToBytes(CharSequence, int, int)")
-            public DynamicTest[] testParseToBytes() {
+            DynamicTest[] testParseToBytes() {
                 IPAddressFormatter<IPAddress<?>> formatter = IPAddressFormatter.anyVersionWithDefaults();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> {
@@ -4452,7 +4452,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("parseToBytes(CharSequence, ParsePosition)")
-            public DynamicTest[] testParseToBytesWithPosition() {
+            DynamicTest[] testParseToBytesWithPosition() {
                 IPAddressFormatter<IPAddress<?>> formatter = IPAddressFormatter.anyVersionWithDefaults();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> formatter.parse(null, new ParsePosition(0)))),
@@ -4736,7 +4736,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("tryParseToBytes")
-            public DynamicTest[] testTryParseToBytes() {
+            DynamicTest[] testTryParseToBytes() {
                 IPAddressFormatter<IPAddress<?>> formatter = IPAddressFormatter.anyVersionWithDefaults();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> {
@@ -4988,11 +4988,11 @@ public class IPAddressFormatterTest {
 
             @Nested
             @DisplayName("asFormat")
-            public class AsFormat {
+            class AsFormat {
 
                 @TestFactory
                 @DisplayName("parseObject(String)")
-                public DynamicTest[] testParseObject() {
+                DynamicTest[] testParseObject() {
                     IPAddressFormat<IPAddress<?>> format = IPAddressFormatter.anyVersionWithDefaults().asFormat();
                     return new DynamicTest[] {
                             dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> format.parseObject(null))),
@@ -5117,7 +5117,7 @@ public class IPAddressFormatterTest {
 
                 @TestFactory
                 @DisplayName("parseObject(String, ParsePosition)")
-                public DynamicTest[] testParseObjectWithPosition() {
+                DynamicTest[] testParseObjectWithPosition() {
                     IPAddressFormat<IPAddress<?>> format = IPAddressFormatter.anyVersionWithDefaults().asFormat();
                     return new DynamicTest[] {
                             dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> format.parseObject(null))),
@@ -5305,7 +5305,7 @@ public class IPAddressFormatterTest {
 
                 @TestFactory
                 @DisplayName("parse(CharSequence)")
-                public DynamicTest[] testParse() {
+                DynamicTest[] testParse() {
                     IPAddressFormat<IPAddress<?>> format = IPAddressFormatter.anyVersionWithDefaults().asFormat();
                     return new DynamicTest[] {
                             dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> format.parse(null))),
@@ -5428,7 +5428,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("isValid")
-            public DynamicTest[] testIsValid() {
+            DynamicTest[] testIsValid() {
                 IPAddressFormatter<IPAddress<?>> formatter = IPAddressFormatter.anyVersionWithDefaults();
                 return new DynamicTest[] {
                         dynamicTest("null", () -> assertEquals(false, formatter.isValid(null, 0, 0))),
@@ -5552,7 +5552,7 @@ public class IPAddressFormatterTest {
 
             @TestFactory
             @DisplayName("testIfValid")
-            public DynamicTest[] testTestIfValid() {
+            DynamicTest[] testTestIfValid() {
                 IPAddressFormatter<IPAddress<?>> formatter = IPAddressFormatter.anyVersionWithDefaults();
                 return new DynamicTest[] {
                         testTestIfValid(formatter, null, null),

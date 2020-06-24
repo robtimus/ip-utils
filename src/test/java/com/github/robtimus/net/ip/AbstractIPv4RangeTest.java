@@ -26,13 +26,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-@SuppressWarnings("javadoc")
-public class AbstractIPv4RangeTest {
+class AbstractIPv4RangeTest {
 
     @ParameterizedTest(name = "[{0}...{1}]: {2}")
     @MethodSource
     @DisplayName("size")
-    public void testSize(IPv4Address from, IPv4Address to, int expectedSize) {
+    void testSize(IPv4Address from, IPv4Address to, int expectedSize) {
         IPv4Range ipRange = new TestRange(from, to);
         assertEquals(expectedSize, ipRange.size());
         assertEquals(expectedSize, ipRange.size());
@@ -48,7 +47,7 @@ public class AbstractIPv4RangeTest {
 
     @Test
     @DisplayName("spliterator")
-    public void testSpliterator() {
+    void testSpliterator() {
         IPv4Range ipRange = new TestRange(IPv4Address.MIN_VALUE, IPv4Address.MAX_VALUE);
         Spliterator<?> spliterator = ipRange.spliterator();
         // IPv4RangeSpliterator has its own tests

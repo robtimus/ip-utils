@@ -23,15 +23,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings({ "javadoc", "nls" })
-public class IPRangeImplTest {
+@SuppressWarnings("nls")
+class IPRangeImplTest {
 
     @Nested
-    public class IPv4 {
+    class IPv4 {
 
         @Test
         @DisplayName("from and to")
-        public void testFromAndTo() {
+        void testFromAndTo() {
             IPv4Address from = IPv4Address.valueOf(0x12345678);
             IPv4Address to = IPv4Address.valueOf(0x87654321);
             IPv4Range ipRange = new IPRangeImpl.IPv4(from, to);
@@ -41,7 +41,7 @@ public class IPRangeImplTest {
 
         @Test
         @DisplayName("toString")
-        public void testToString() {
+        void testToString() {
             IPv4Address from = IPv4Address.valueOf(12, 34, 56, 78);
             IPv4Address to = IPv4Address.valueOf(87, 65, 43, 21);
             IPv4Range ipRange = new IPRangeImpl.IPv4(from, to);
@@ -52,11 +52,11 @@ public class IPRangeImplTest {
     }
 
     @Nested
-    public class IPv6 {
+    class IPv6 {
 
         @Test
         @DisplayName("from and to")
-        public void testFromAndTo() {
+        void testFromAndTo() {
             IPv6Address from = IPv6Address.valueOf(0x12345678, 0x12345678);
             IPv6Address to = IPv6Address.valueOf(0x87654321, 0x87654321);
             IPv6Range ipRange = new IPRangeImpl.IPv6(from, to);
@@ -66,7 +66,7 @@ public class IPRangeImplTest {
 
         @Test
         @DisplayName("toString")
-        public void testToString() {
+        void testToString() {
             IPv6Address from = IPv6Address.valueOf(0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF);
             IPv6Address to = IPv6Address.valueOf(0xEF, 0xCD, 0xAB, 0x90, 0x78, 0x56, 0x34, 0x12);
             IPv6Range ipRange = new IPRangeImpl.IPv6(from, to);

@@ -20,7 +20,7 @@ package com.github.robtimus.net.ip;
 final class IPRangeImpl {
 
     private IPRangeImpl() {
-        throw new Error("cannot create instances of " + getClass().getName()); //$NON-NLS-1$
+        throw new IllegalStateException("cannot create instances of " + getClass().getName()); //$NON-NLS-1$
     }
 
     static final class IPv4 extends AbstractIPv4Range {

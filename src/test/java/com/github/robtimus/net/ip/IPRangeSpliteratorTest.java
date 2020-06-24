@@ -29,13 +29,13 @@ import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
-@SuppressWarnings({ "javadoc", "nls" })
-public class IPRangeSpliteratorTest {
+@SuppressWarnings("nls")
+class IPRangeSpliteratorTest {
 
     @TestFactory
     @DisplayName("tryAdvance")
     @SuppressWarnings("unchecked")
-    public DynamicTest[] testTryAdvance() {
+    DynamicTest[] testTryAdvance() {
         return new DynamicTest[] {
                 dynamicTest("end before MAX_VALUE", () -> {
                     IPRangeSpliterator<?> spliterator = new TestSpliterator(IPv4Address.LOCALHOST.previous(), IPv4Address.LOCALHOST.next());
@@ -64,7 +64,7 @@ public class IPRangeSpliteratorTest {
 
     @Test
     @DisplayName("getComparator")
-    public void testGetComparator() {
+    void testGetComparator() {
         IPRangeSpliterator<?> spliterator = new TestSpliterator(IPv4Address.MIN_VALUE, IPv4Address.MAX_VALUE);
         assertNull(spliterator.getComparator());
     }

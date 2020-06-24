@@ -26,13 +26,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-@SuppressWarnings("javadoc")
-public class AbstractIPv6RangeTest {
+class AbstractIPv6RangeTest {
 
     @ParameterizedTest(name = "[{0}...{1}]: {2}")
     @MethodSource
     @DisplayName("size")
-    public void testSize(IPv6Address from, IPv6Address to, int expectedSize) {
+    void testSize(IPv6Address from, IPv6Address to, int expectedSize) {
         IPv6Range ipRange = new TestRange(from, to);
         assertEquals(expectedSize, ipRange.size());
         assertEquals(expectedSize, ipRange.size());
@@ -69,7 +68,7 @@ public class AbstractIPv6RangeTest {
 
     @Test
     @DisplayName("spliterator")
-    public void testSpliterator() {
+    void testSpliterator() {
         IPv6Range ipRange = new AbstractIPv6Range() {
             @Override
             public IPv6Address from() {

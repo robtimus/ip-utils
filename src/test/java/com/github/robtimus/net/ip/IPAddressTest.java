@@ -37,12 +37,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-@SuppressWarnings({ "javadoc", "nls" })
-public class IPAddressTest {
+@SuppressWarnings("nls")
+class IPAddressTest {
 
     @TestFactory
     @DisplayName("valueOf(byte[])")
-    public DynamicTest[] testValueOfByteArray() {
+    DynamicTest[] testValueOfByteArray() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> IPAddress.valueOf((byte[]) null))),
                 testValueOfByteArray(new byte[] { 0x12, 0x34, 0x56, 0x78 }, IPv4Address.valueOf(0x12345678)),
@@ -78,7 +78,7 @@ public class IPAddressTest {
 
     @TestFactory
     @DisplayName("valueOf(CharSequence)")
-    public DynamicTest[] testValueOfCharSequence() {
+    DynamicTest[] testValueOfCharSequence() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> IPAddress.valueOf((CharSequence) null))),
                 testValueOfCharSequence("127.0.0.1", IPv4Address.LOCALHOST),
@@ -113,7 +113,7 @@ public class IPAddressTest {
 
     @TestFactory
     @DisplayName("tryValueOf")
-    public DynamicTest[] testTryValueOf() {
+    DynamicTest[] testTryValueOf() {
         return new DynamicTest[] {
                 testTryValueOf(null, Optional.empty()),
                 testTryValueOf("", Optional.empty()),
@@ -143,7 +143,7 @@ public class IPAddressTest {
 
     @TestFactory
     @DisplayName("valueOf(InetAddress)")
-    public DynamicTest[] testValueOfInetAddress() {
+    DynamicTest[] testValueOfInetAddress() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> assertThrows(NullPointerException.class, () -> IPAddress.valueOf((InetAddress) null))),
                 testValueOfInetAddress("127.0.0.1", IPv4Address.LOCALHOST),
@@ -166,7 +166,7 @@ public class IPAddressTest {
 
     @TestFactory
     @DisplayName("isIPAddress")
-    public DynamicTest[] testIsIPAddress() {
+    DynamicTest[] testIsIPAddress() {
         return new DynamicTest[] {
                 testIsIPAddress(null, false),
                 testIsIPAddress("", false),
@@ -194,7 +194,7 @@ public class IPAddressTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource
     @DisplayName("ifValidIPAddress")
-    public void testIfValidIPAddress(String s, IPAddress<?> expected) {
+    void testIfValidIPAddress(String s, IPAddress<?> expected) {
         testIfValidIPAddress(s, expected, true);
         testIfValidIPAddress(s, expected, false);
     }

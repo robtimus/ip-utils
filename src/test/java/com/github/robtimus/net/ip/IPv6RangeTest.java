@@ -21,12 +21,11 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@SuppressWarnings("javadoc")
-public class IPv6RangeTest {
+class IPv6RangeTest {
 
     @Test
     @DisplayName("all()")
-    public void testAll() {
+    void testAll() {
         IPv6Range ipRange = IPv6Range.all();
         assertSame(IPv6Address.MIN_VALUE, ipRange.from());
         assertSame(IPv6Address.MAX_VALUE, ipRange.to());

@@ -31,13 +31,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-@SuppressWarnings({ "javadoc", "nls" })
-public class IPv6SubnetTest {
+@SuppressWarnings("nls")
+class IPv6SubnetTest {
 
     @ParameterizedTest(name = "{0}/{1}: {2}")
     @MethodSource
     @DisplayName("size")
-    public void testSize(IPv6Address address, int prefixLength, int expectedSize) {
+    void testSize(IPv6Address address, int prefixLength, int expectedSize) {
         IPv6Subnet subnet = address.startingSubnet(prefixLength);
         assertEquals(expectedSize, subnet.size());
         assertEquals(expectedSize, subnet.size());
@@ -74,7 +74,7 @@ public class IPv6SubnetTest {
 
     @Test
     @DisplayName("spliterator")
-    public void testSpliterator() {
+    void testSpliterator() {
         IPv6Subnet subnet = IPv6Address.MIN_VALUE.startingSubnet(0);
         Spliterator<?> spliterator = subnet.spliterator();
         // IPv6RangeSpliterator has its own tests
@@ -83,7 +83,7 @@ public class IPv6SubnetTest {
 
     @TestFactory
     @DisplayName("valueOf(CharSequence) and valueOf(CharSequence, int, int)")
-    public DynamicTest[] testValueOfCIDRNotation() {
+    DynamicTest[] testValueOfCIDRNotation() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> {
                     assertThrows(NullPointerException.class, () -> IPv6Subnet.valueOf(null));
@@ -180,7 +180,7 @@ public class IPv6SubnetTest {
 
     @TestFactory
     @DisplayName("tryValueOfIPv6")
-    public DynamicTest[] testTryValueOfIPv6() {
+    DynamicTest[] testTryValueOfIPv6() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> {
                     assertEquals(Optional.empty(), IPv6Subnet.tryValueOfIPv6(null));
@@ -235,7 +235,7 @@ public class IPv6SubnetTest {
 
     @TestFactory
     @DisplayName("valueOf(CharSequence, int) and valueOf(IPv6Address, int)")
-    public DynamicTest[] testValueOfWithIPAddress() {
+    DynamicTest[] testValueOfWithIPAddress() {
         CharSequence address = "12:34:56:78:90:ab:cd:ef";
         return new DynamicTest[] {
                 dynamicTest("null CharSequence", () -> assertThrows(NullPointerException.class, () -> IPv6Subnet.valueOf((CharSequence) null, 1))),
@@ -290,7 +290,7 @@ public class IPv6SubnetTest {
 
     @TestFactory
     @DisplayName("isIPv6Subnet")
-    public DynamicTest[] testIsIPv6Subnet() {
+    DynamicTest[] testIsIPv6Subnet() {
         return new DynamicTest[] {
                 dynamicTest("null", () -> {
                     assertEquals(false, IPv6Subnet.isIPv6Subnet(null));
