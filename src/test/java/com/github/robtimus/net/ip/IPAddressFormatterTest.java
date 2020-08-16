@@ -265,6 +265,7 @@ class IPAddressFormatterTest {
             return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                 ParseException exception = assertThrows(ParseException.class, () -> formatter.parse(source));
                 assertEquals(errorIndex, exception.getErrorOffset());
+                assertEquals(Messages.IPv4Address.parseError.get(source), exception.getMessage());
 
                 exception = assertThrows(ParseException.class, () -> formatter.parse("1" + source + "1", 1, 1 + source.length()));
                 assertEquals(errorIndex + 1, exception.getErrorOffset());
@@ -431,6 +432,7 @@ class IPAddressFormatterTest {
             return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                 ParseException exception = assertThrows(ParseException.class, () -> formatter.parseToBytes(source));
                 assertEquals(errorIndex, exception.getErrorOffset());
+                assertEquals(Messages.IPv4Address.parseError.get(source), exception.getMessage());
 
                 exception = assertThrows(ParseException.class, () -> formatter.parseToBytes("1" + source + "1", 1, 1 + source.length()));
                 assertEquals(errorIndex + 1, exception.getErrorOffset());
@@ -1515,6 +1517,7 @@ class IPAddressFormatterTest {
                 return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                     ParseException exception = assertThrows(ParseException.class, () -> formatter.parse(source));
                     assertEquals(errorIndex, exception.getErrorOffset());
+                    assertEquals(Messages.IPv6Address.parseError.get(source), exception.getMessage());
 
                     exception = assertThrows(ParseException.class, () -> formatter.parse("1" + source + "1", 1, 1 + source.length()));
                     assertEquals(errorIndex + 1, exception.getErrorOffset());
@@ -2040,6 +2043,7 @@ class IPAddressFormatterTest {
                 return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                     ParseException exception = assertThrows(ParseException.class, () -> formatter.parseToBytes(source));
                     assertEquals(errorIndex, exception.getErrorOffset());
+                    assertEquals(Messages.IPv6Address.parseError.get(source), exception.getMessage());
 
                     exception = assertThrows(ParseException.class, () -> formatter.parseToBytes("1" + source + "1", 1, 1 + source.length()));
                     assertEquals(errorIndex + 1, exception.getErrorOffset());
@@ -3866,6 +3870,7 @@ class IPAddressFormatterTest {
                 return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                     ParseException exception = assertThrows(ParseException.class, () -> formatter.parse(source));
                     assertEquals(errorIndex, exception.getErrorOffset());
+                    assertEquals(Messages.IPAddress.parseError.get(source), exception.getMessage());
 
                     exception = assertThrows(ParseException.class, () -> formatter.parse("1" + source + "1", 1, 1 + source.length()));
                     assertEquals(errorIndex + 1, exception.getErrorOffset());
@@ -4439,6 +4444,7 @@ class IPAddressFormatterTest {
                 return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                     ParseException exception = assertThrows(ParseException.class, () -> formatter.parseToBytes(source));
                     assertEquals(errorIndex, exception.getErrorOffset());
+                    assertEquals(Messages.IPAddress.parseError.get(source), exception.getMessage());
 
                     exception = assertThrows(ParseException.class, () -> formatter.parseToBytes("1" + source + "1", 1, 1 + source.length()));
                     assertEquals(errorIndex + 1, exception.getErrorOffset());

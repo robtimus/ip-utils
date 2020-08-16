@@ -171,6 +171,8 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
 
     abstract IP valueOf(CharSequence address, int start, int end);
 
+    abstract IP valueOf(CharSequence address, int start, int end, Function<CharSequence, String> errorMessage);
+
     /**
      * Parses a {@code CharSequence} to an IP address.
      *
@@ -197,6 +199,8 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @since 1.1
      */
     public abstract IP parse(CharSequence source, int start, int end) throws ParseException;
+
+    abstract IP parse(CharSequence source, int start, int end, Function<CharSequence, String> errorMessage) throws ParseException;
 
     /**
      * Attempts to parse a {@code CharSequence} to an IP address. Parsing starts at the current index of the given {@code ParsePosition}.
@@ -263,6 +267,8 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @since 1.1
      */
     public abstract byte[] parseToBytes(CharSequence source, int start, int end) throws ParseException;
+
+    abstract byte[] parseToBytes(CharSequence source, int start, int end, Function<CharSequence, String> errorMessage) throws ParseException;
 
     /**
      * Attempts to parse a {@code CharSequence} to an IP address. Parsing starts at the current index of the given {@code ParsePosition}.
@@ -647,24 +653,34 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
 
         @Override
         IPv4Address valueOf(CharSequence address, int start, int end) {
+            return valueOf(address, start, end, Messages.IPv4Address.invalidIPv4Address::get);
+        }
+
+        @Override
+        IPv4Address valueOf(CharSequence address, int start, int end, Function<CharSequence, String> errorMessage) {
             Objects.requireNonNull(address);
             checkBounds(address, start, end);
             Parser parser = new Parser(address, start, end, true);
             if (parser.parse()) {
                 return IPv4Address.valueOf(parser.address);
             }
-            throw new IllegalArgumentException(Messages.IPAddress.invalidIPAddress.get(address));
+            throw new IllegalArgumentException(errorMessage.apply(address));
         }
 
         @Override
         public IPv4Address parse(CharSequence source, int start, int end) throws ParseException {
+            return parse(source, start, end, Messages.IPv4Address.parseError::get);
+        }
+
+        @Override
+        IPv4Address parse(CharSequence source, int start, int end, Function<CharSequence, String> errorMessage) throws ParseException {
             Objects.requireNonNull(source);
             checkBounds(source, start, end);
             Parser parser = new Parser(source, start, end, true);
             if (parser.parse()) {
                 return IPv4Address.valueOf(parser.address);
             }
-            throw new ParseException(Messages.IPAddress.parseError.get(source), parser.errorIndex);
+            throw new ParseException(errorMessage.apply(source), parser.errorIndex);
         }
 
         @Override
@@ -691,13 +707,18 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
 
         @Override
         public byte[] parseToBytes(CharSequence source, int start, int end) throws ParseException {
+            return parseToBytes(source, start, end, Messages.IPv4Address.parseError::get);
+        }
+
+        @Override
+        byte[] parseToBytes(CharSequence source, int start, int end, Function<CharSequence, String> errorMessage) throws ParseException {
             Objects.requireNonNull(source);
             checkBounds(source, start, end);
             Parser parser = new Parser(source, start, end, true);
             if (parser.parse()) {
                 return Bytes.intToAddress(parser.address);
             }
-            throw new ParseException(Messages.IPAddress.parseError.get(source), parser.errorIndex);
+            throw new ParseException(errorMessage.apply(source), parser.errorIndex);
         }
 
         @Override
@@ -885,24 +906,34 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
 
         @Override
         IPv6Address valueOf(CharSequence address, int start, int end) {
+            return valueOf(address, start, end, Messages.IPv6Address.invalidIPv6Address::get);
+        }
+
+        @Override
+        IPv6Address valueOf(CharSequence address, int start, int end, Function<CharSequence, String> errorMessage) {
             Objects.requireNonNull(address);
             checkBounds(address, start, end);
             Parser parser = new Parser(address, start, end, true);
             if (parser.parse()) {
                 return IPv6Address.valueOf(parser.highAddress, parser.lowAddress);
             }
-            throw new IllegalArgumentException(Messages.IPAddress.invalidIPAddress.get(address));
+            throw new IllegalArgumentException(errorMessage.apply(address));
         }
 
         @Override
         public IPv6Address parse(CharSequence source, int start, int end) throws ParseException {
+            return parse(source, start, end, Messages.IPv6Address.parseError::get);
+        }
+
+        @Override
+        IPv6Address parse(CharSequence source, int start, int end, Function<CharSequence, String> errorMessage) throws ParseException {
             Objects.requireNonNull(source);
             checkBounds(source, start, end);
             Parser parser = new Parser(source, start, end, true);
             if (parser.parse()) {
                 return IPv6Address.valueOf(parser.highAddress, parser.lowAddress);
             }
-            throw new ParseException(Messages.IPAddress.parseError.get(source), parser.errorIndex);
+            throw new ParseException(errorMessage.apply(source), parser.errorIndex);
         }
 
         @Override
@@ -929,13 +960,18 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
 
         @Override
         public byte[] parseToBytes(CharSequence source, int start, int end) throws ParseException {
+            return parseToBytes(source, start, end, Messages.IPv6Address.parseError::get);
+        }
+
+        @Override
+        byte[] parseToBytes(CharSequence source, int start, int end, Function<CharSequence, String> errorMessage) throws ParseException {
             Objects.requireNonNull(source);
             checkBounds(source, start, end);
             Parser parser = new Parser(source, start, end, true);
             if (parser.parse()) {
                 return Bytes.longsToAddress(parser.highAddress, parser.lowAddress);
             }
-            throw new ParseException(Messages.IPAddress.parseError.get(source), parser.errorIndex);
+            throw new ParseException(errorMessage.apply(source), parser.errorIndex);
         }
 
         @Override
@@ -1394,12 +1430,22 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
 
         @Override
         IPAddress<?> valueOf(CharSequence address, int start, int end) {
-            return getFormatter(address, start, end).valueOf(address, start, end);
+            return valueOf(address, start, end, Messages.IPAddress.invalidIPAddress::get);
+        }
+
+        @Override
+        IPAddress<?> valueOf(CharSequence address, int start, int end, Function<CharSequence, String> errorMessage) {
+            return getFormatter(address, start, end).valueOf(address, start, end, errorMessage);
         }
 
         @Override
         public IPAddress<?> parse(CharSequence source, int start, int end) throws ParseException {
-            return getFormatter(source, start, end).parse(source, start, end);
+            return parse(source, start, end, Messages.IPAddress.parseError::get);
+        }
+
+        @Override
+        IPAddress<?> parse(CharSequence source, int start, int end, Function<CharSequence, String> errorMessage) throws ParseException {
+            return getFormatter(source, start, end).parse(source, start, end, errorMessage);
         }
 
         @Override
@@ -1415,7 +1461,12 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
 
         @Override
         public byte[] parseToBytes(CharSequence source, int start, int end) throws ParseException {
-            return getFormatter(source, start, end).parseToBytes(source, start, end);
+            return parseToBytes(source, start, end, Messages.IPAddress.parseError::get);
+        }
+
+        @Override
+        byte[] parseToBytes(CharSequence source, int start, int end, Function<CharSequence, String> errorMessage) throws ParseException {
+            return getFormatter(source, start, end).parseToBytes(source, start, end, errorMessage);
         }
 
         @Override

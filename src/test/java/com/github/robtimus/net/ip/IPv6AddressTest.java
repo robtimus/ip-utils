@@ -685,7 +685,7 @@ class IPv6AddressTest {
     private DynamicTest testValueOfInvalidCharSequence(String address) {
         return dynamicTest(address, () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv6Address.valueOf(address));
-            assertEquals(Messages.IPAddress.invalidIPAddress.get(address), exception.getMessage());
+            assertEquals(Messages.IPv6Address.invalidIPv6Address.get(address), exception.getMessage());
 
             assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, -1, address.length()));
             assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, 0, address.length() + 1));
