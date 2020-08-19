@@ -86,7 +86,7 @@ public interface IPRange<IP extends IPAddress<IP>> extends Collection<IP> {
     /**
      * Returns whether or not an IP address is in this IP range.
      * <p>
-     * This implementation returns {@code true} only if the given IP address is not {@code null}, is not larger than {@link #from()} and not larger
+     * This implementation returns {@code true} only if the given IP address is not {@code null}, is not smaller than {@link #from()} and not larger
      * than {@link #to()}.
      *
      * @param ipAddress The IP address to check.
