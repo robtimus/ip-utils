@@ -23,3 +23,7 @@ This library makes it possible to create an IP range from two IP addresses, or a
 ## Bean Validation support
 
 The [ip-validation](https://robtimus.github.io/ip-validation/) library uses this library to provide validation constraints that work on both [CharSequence](https://docs.oracle.com/javase/8/docs/api/java/lang/CharSequence.html) and [IPAddress](https://robtimus.github.io/ip-utils/apidocs/com/github/robtimus/net/ip/IPAddress.html). These not only allow you to validate that a value is a valid IP address, but also that the IP address is contained in a specific IP range or subnet.
+
+## JSON support
+
+The [ip-jackson-databind](https://robtimus.github.io/ip-jackson-databind/) library provides support for serializing and deserializing IP addresses and ranges using Jackson.
