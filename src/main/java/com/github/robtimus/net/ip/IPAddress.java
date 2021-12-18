@@ -226,12 +226,12 @@ public abstract class IPAddress<IP extends IPAddress<IP>> implements Comparable<
      */
     public static IPAddress<?> valueOf(byte[] address) {
         switch (address.length) {
-        case IPv4Address.BYTES:
-            return IPv4Address.valueOf(address);
-        case IPv6Address.BYTES:
-            return IPv6Address.valueOf(address);
-        default:
-            throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize.get(address.length));
+            case IPv4Address.BYTES:
+                return IPv4Address.valueOf(address);
+            case IPv6Address.BYTES:
+                return IPv6Address.valueOf(address);
+            default:
+                throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize.get(address.length));
         }
     }
 

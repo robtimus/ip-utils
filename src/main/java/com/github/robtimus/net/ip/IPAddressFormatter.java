@@ -1396,24 +1396,24 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
         @Override
         public String format(byte[] address) {
             switch (address.length) {
-            case IPv4Address.BYTES:
-                return ipv4.format(address);
-            case IPv6Address.BYTES:
-                return ipv6.format(address);
-            default:
-                throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize.get(address.length));
+                case IPv4Address.BYTES:
+                    return ipv4.format(address);
+                case IPv6Address.BYTES:
+                    return ipv6.format(address);
+                default:
+                    throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize.get(address.length));
             }
         }
 
         @Override
         public <A extends Appendable> A append(byte[] address, A appendable) throws IOException {
             switch (address.length) {
-            case IPv4Address.BYTES:
-                return ipv4.append(address, appendable);
-            case IPv6Address.BYTES:
-                return ipv6.append(address, appendable);
-            default:
-                throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize.get(address.length));
+                case IPv4Address.BYTES:
+                    return ipv4.append(address, appendable);
+                case IPv6Address.BYTES:
+                    return ipv6.append(address, appendable);
+                default:
+                    throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize.get(address.length));
             }
         }
 

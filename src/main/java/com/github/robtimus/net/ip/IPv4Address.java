@@ -190,9 +190,9 @@ public final class IPv4Address extends IPAddress<IPv4Address> {
         // 10 (decimal) == 0x0A
         // 172 (decimal) == 0xAC, plus 1 for the next 4 bytes
         // 192 (decimal) == 0xC0, 168 (decimal) == 0xA8
-        return ((address & 0xFF00_0000) == 0x0A00_0000)
-                || ((address & 0xFFF0_0000) == 0xAC10_0000)
-                || ((address & 0xFFFF_0000) == 0xC0A8_0000);
+        return (address & 0xFF00_0000) == 0x0A00_0000
+                || (address & 0xFFF0_0000) == 0xAC10_0000
+                || (address & 0xFFFF_0000) == 0xC0A8_0000;
     }
 
     @Override
@@ -285,19 +285,19 @@ public final class IPv4Address extends IPAddress<IPv4Address> {
 
     static IPv4Address valueOf(int address) {
         switch (address) {
-        case LOCALHOST_ADDRESS:
-            return LOCALHOST;
-        case MIN_ADDRESS:
-            return MIN_VALUE;
-        case MAX_ADDRESS:
-            return MAX_VALUE;
-        default:
-            for (IPv4Address netmask : NETMASKS) {
-                if (netmask.address == address) {
-                    return netmask;
+            case LOCALHOST_ADDRESS:
+                return LOCALHOST;
+            case MIN_ADDRESS:
+                return MIN_VALUE;
+            case MAX_ADDRESS:
+                return MAX_VALUE;
+            default:
+                for (IPv4Address netmask : NETMASKS) {
+                    if (netmask.address == address) {
+                        return netmask;
+                    }
                 }
-            }
-            return new IPv4Address(address);
+                return new IPv4Address(address);
         }
     }
 
