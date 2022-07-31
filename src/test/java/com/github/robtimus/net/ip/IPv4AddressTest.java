@@ -779,7 +779,7 @@ class IPv4AddressTest {
     }
 
     @ParameterizedTest(name = "{0}")
-    @MethodSource
+    @MethodSource("ifValidIPv4AddressArguments")
     @DisplayName("ifValidIPv4Address")
     void testIfValidIPv4Address(String s, IPv4Address expected) {
         testIfValidIPv4Address(s, expected, true);
@@ -801,7 +801,7 @@ class IPv4AddressTest {
         verifyNoMoreInteractions(predicate);
     }
 
-    static Arguments[] testIfValidIPv4Address() {
+    static Arguments[] ifValidIPv4AddressArguments() {
         return new Arguments[] {
                 arguments(null, null),
                 arguments("123.456.789.0", null),

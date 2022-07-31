@@ -945,7 +945,7 @@ class IPv6AddressTest {
     }
 
     @ParameterizedTest(name = "{0}")
-    @MethodSource
+    @MethodSource("ifValidIPv6AddressArguments")
     @DisplayName("ifValidIPv6Address")
     void testIfValidIPv6Address(String s, IPv6Address expected) {
         testIfValidIPv6Address(s, expected, true);
@@ -967,7 +967,7 @@ class IPv6AddressTest {
         verifyNoMoreInteractions(predicate);
     }
 
-    static Arguments[] testIfValidIPv6Address() {
+    static Arguments[] ifValidIPv6AddressArguments() {
         return new Arguments[] {
                 arguments(null, null),
                 arguments("12345:6789:0abc:def3:4567:890a:bcde:f123", null),

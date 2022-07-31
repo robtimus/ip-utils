@@ -192,7 +192,7 @@ class IPAddressTest {
     }
 
     @ParameterizedTest(name = "{0}")
-    @MethodSource
+    @MethodSource("ifValidIPAddressArguments")
     @DisplayName("ifValidIPAddress")
     void testIfValidIPAddress(String s, IPAddress<?> expected) {
         testIfValidIPAddress(s, expected, true);
@@ -214,7 +214,7 @@ class IPAddressTest {
         verifyNoMoreInteractions(predicate);
     }
 
-    static Arguments[] testIfValidIPAddress() {
+    static Arguments[] ifValidIPAddressArguments() {
         return new Arguments[] {
                 arguments(null, null),
                 arguments("123.456.789.0", null),
