@@ -609,13 +609,15 @@ class IPv4AddressTest {
 
     private DynamicTest testValueOfCharSequence(String address, IPv4Address expected) {
         return dynamicTest(address, () -> {
-            assertEquals(expected, IPv4Address.valueOf(address));
-            assertEquals(expected, IPv4Address.valueOf("1" + address + "1", 1, 1 + address.length()));
-            assertEquals(expected, IPv4Address.valueOf("z" + address + "z", 1, 1 + address.length()));
+            int length = address.length();
 
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Address.valueOf(address, -1, address.length()));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Address.valueOf(address, 0, address.length() + 1));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Address.valueOf(address, address.length() + 1, address.length()));
+            assertEquals(expected, IPv4Address.valueOf(address));
+            assertEquals(expected, IPv4Address.valueOf("1" + address + "1", 1, 1 + length));
+            assertEquals(expected, IPv4Address.valueOf("z" + address + "z", 1, 1 + length));
+
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Address.valueOf(address, -1, length));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Address.valueOf(address, 0, length + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Address.valueOf(address, length + 1, length));
             assertThrows(IndexOutOfBoundsException.class, () -> IPv4Address.valueOf(address, 0, -1));
         });
     }
@@ -625,9 +627,10 @@ class IPv4AddressTest {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv4Address.valueOf(address));
             assertEquals(Messages.IPv4Address.invalidIPv4Address(address), exception.getMessage());
 
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Address.valueOf(address, -1, address.length()));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Address.valueOf(address, 0, address.length() + 1));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Address.valueOf(address, address.length() + 1, address.length()));
+            int length = address.length();
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Address.valueOf(address, -1, length));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Address.valueOf(address, 0, length + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv4Address.valueOf(address, length + 1, length));
             assertThrows(IndexOutOfBoundsException.class, () -> IPv4Address.valueOf(address, 0, -1));
         });
     }

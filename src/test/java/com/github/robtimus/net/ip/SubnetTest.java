@@ -146,9 +146,10 @@ class SubnetTest {
             assertEquals(expectedFrom, subnet.from());
             assertEquals(expectedTo, subnet.to());
 
-            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, -1, cidrNotation.length()));
-            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, 0, cidrNotation.length() + 1));
-            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, cidrNotation.length() + 1, cidrNotation.length()));
+            int length = cidrNotation.length();
+            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, -1, length));
+            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, 0, length + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, length + 1, length));
             assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, 0, -1));
         });
     }
@@ -158,9 +159,10 @@ class SubnetTest {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> Subnet.valueOf(cidrNotation));
             assertEquals(Messages.Subnet.invalidCIDRNotation(cidrNotation), exception.getMessage());
 
-            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, -1, cidrNotation.length()));
-            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, 0, cidrNotation.length() + 1));
-            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, cidrNotation.length() + 1, cidrNotation.length()));
+            int length = cidrNotation.length();
+            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, -1, length));
+            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, 0, length + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, length + 1, length));
             assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, 0, -1));
         });
     }
@@ -170,9 +172,10 @@ class SubnetTest {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> Subnet.valueOf(cidrNotation));
             assertEquals(Messages.Subnet.invalidRoutingPrefix(routingPrefix, prefixLength), exception.getMessage());
 
-            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, -1, cidrNotation.length()));
-            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, 0, cidrNotation.length() + 1));
-            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, cidrNotation.length() + 1, cidrNotation.length()));
+            int length = cidrNotation.length();
+            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, -1, length));
+            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, 0, length + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, length + 1, length));
             assertThrows(IndexOutOfBoundsException.class, () -> Subnet.valueOf(cidrNotation, 0, -1));
         });
     }
@@ -242,13 +245,15 @@ class SubnetTest {
     private DynamicTest testTryValueOf(String cidrNotation, Optional<Subnet<?>> expected) {
         String displayName = String.valueOf(cidrNotation);
         return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> {
-            assertEquals(expected, Subnet.tryValueOf(cidrNotation));
-            assertEquals(expected, Subnet.tryValueOf("1" + cidrNotation + "1", 1, 1 + cidrNotation.length()));
-            assertEquals(expected, Subnet.tryValueOf("z" + cidrNotation + "z", 1, 1 + cidrNotation.length()));
+            int length = cidrNotation.length();
 
-            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.tryValueOf(cidrNotation, -1, cidrNotation.length()));
-            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.tryValueOf(cidrNotation, 0, cidrNotation.length() + 1));
-            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.tryValueOf(cidrNotation, cidrNotation.length() + 1, cidrNotation.length()));
+            assertEquals(expected, Subnet.tryValueOf(cidrNotation));
+            assertEquals(expected, Subnet.tryValueOf("1" + cidrNotation + "1", 1, 1 + length));
+            assertEquals(expected, Subnet.tryValueOf("z" + cidrNotation + "z", 1, 1 + length));
+
+            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.tryValueOf(cidrNotation, -1, length));
+            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.tryValueOf(cidrNotation, 0, length + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.tryValueOf(cidrNotation, length + 1, length));
             assertThrows(IndexOutOfBoundsException.class, () -> Subnet.tryValueOf(cidrNotation, 0, -1));
         });
     }
@@ -355,13 +360,15 @@ class SubnetTest {
     private DynamicTest testIsSubnet(CharSequence s, boolean expected) {
         String displayName = String.valueOf(s);
         return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> {
-            assertEquals(expected, Subnet.isSubnet(s));
-            assertEquals(expected, Subnet.isSubnet("1" + s + "1", 1, 1 + s.length()));
-            assertEquals(expected, Subnet.isSubnet("z" + s + "z", 1, 1 + s.length()));
+            int length = s.length();
 
-            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.isSubnet(s, -1, s.length()));
-            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.isSubnet(s, 0, s.length() + 1));
-            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.isSubnet(s, s.length() + 1, s.length()));
+            assertEquals(expected, Subnet.isSubnet(s));
+            assertEquals(expected, Subnet.isSubnet("1" + s + "1", 1, 1 + length));
+            assertEquals(expected, Subnet.isSubnet("z" + s + "z", 1, 1 + length));
+
+            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.isSubnet(s, -1, length));
+            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.isSubnet(s, 0, length + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> Subnet.isSubnet(s, length + 1, length));
             assertThrows(IndexOutOfBoundsException.class, () -> Subnet.isSubnet(s, 0, -1));
         });
     }

@@ -207,7 +207,8 @@ class IPRangeTest {
     void testAddAll() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
-        assertThrows(UnsupportedOperationException.class, () -> ipRange.addAll(Collections.emptyList()));
+        Collection<IPv4Address> c = Collections.emptyList();
+        assertThrows(UnsupportedOperationException.class, () -> ipRange.addAll(c));
     }
 
     @Test
@@ -215,7 +216,8 @@ class IPRangeTest {
     void testRemoveAll() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
-        assertThrows(UnsupportedOperationException.class, () -> ipRange.removeAll(Collections.emptyList()));
+        Collection<IPv4Address> c = Collections.emptyList();
+        assertThrows(UnsupportedOperationException.class, () -> ipRange.removeAll(c));
     }
 
     @Test
@@ -231,7 +233,8 @@ class IPRangeTest {
     void testRetainAll() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
-        assertThrows(UnsupportedOperationException.class, () -> ipRange.retainAll(Collections.emptyList()));
+        Collection<IPv4Address> c = Collections.emptyList();
+        assertThrows(UnsupportedOperationException.class, () -> ipRange.retainAll(c));
     }
 
     @Test

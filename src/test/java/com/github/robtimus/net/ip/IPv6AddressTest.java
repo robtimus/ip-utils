@@ -694,13 +694,15 @@ class IPv6AddressTest {
 
     private DynamicTest testValueOfCharSequence(String address, IPv6Address expected) {
         return dynamicTest(address, () -> {
-            assertEquals(expected, IPv6Address.valueOf(address));
-            assertEquals(expected, IPv6Address.valueOf("1" + address + "1", 1, 1 + address.length()));
-            assertEquals(expected, IPv6Address.valueOf("z" + address + "z", 1, 1 + address.length()));
+            int length = address.length();
 
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, -1, address.length()));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, 0, address.length() + 1));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, address.length() + 1, address.length()));
+            assertEquals(expected, IPv6Address.valueOf(address));
+            assertEquals(expected, IPv6Address.valueOf("1" + address + "1", 1, 1 + length));
+            assertEquals(expected, IPv6Address.valueOf("z" + address + "z", 1, 1 + length));
+
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, -1, length));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, 0, length + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, length + 1, length));
             assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, 0, -1));
         });
     }
@@ -710,9 +712,10 @@ class IPv6AddressTest {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv6Address.valueOf(address));
             assertEquals(Messages.IPv6Address.invalidIPv6Address(address), exception.getMessage());
 
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, -1, address.length()));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, 0, address.length() + 1));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, address.length() + 1, address.length()));
+            int length = address.length();
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, -1, length));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, 0, length + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, length + 1, length));
             assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, 0, -1));
         });
     }

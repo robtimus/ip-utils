@@ -140,9 +140,10 @@ class IPv6SubnetTest {
             assertEquals(expectedFrom, subnet.from());
             assertEquals(expectedTo, subnet.to());
 
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, -1, cidrNotation.length()));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, 0, cidrNotation.length() + 1));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, cidrNotation.length() + 1, cidrNotation.length()));
+            int length = cidrNotation.length();
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, -1, length));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, 0, length + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, length + 1, length));
             assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, 0, -1));
         });
     }
@@ -152,9 +153,10 @@ class IPv6SubnetTest {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv6Subnet.valueOf(cidrNotation));
             assertEquals(Messages.Subnet.invalidCIDRNotation(cidrNotation), exception.getMessage());
 
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, -1, cidrNotation.length()));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, 0, cidrNotation.length() + 1));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, cidrNotation.length() + 1, cidrNotation.length()));
+            int length = cidrNotation.length();
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, -1, length));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, 0, length + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, length + 1, length));
             assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, 0, -1));
         });
     }
@@ -164,9 +166,10 @@ class IPv6SubnetTest {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv6Subnet.valueOf(cidrNotation));
             assertEquals(Messages.Subnet.invalidRoutingPrefix(routingPrefix, prefixLength), exception.getMessage());
 
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, -1, cidrNotation.length()));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, 0, cidrNotation.length() + 1));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, cidrNotation.length() + 1, cidrNotation.length()));
+            int length = cidrNotation.length();
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, -1, length));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, 0, length + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, length + 1, length));
             assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, 0, -1));
         });
     }
@@ -221,14 +224,15 @@ class IPv6SubnetTest {
     private DynamicTest testTryValueOfIPv6(String cidrNotation, Optional<IPv6Subnet> expected) {
         String displayName = String.valueOf(cidrNotation);
         return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> {
-            assertEquals(expected, IPv6Subnet.tryValueOfIPv6(cidrNotation));
-            assertEquals(expected, IPv6Subnet.tryValueOfIPv6("1" + cidrNotation + "1", 1, 1 + cidrNotation.length()));
-            assertEquals(expected, IPv6Subnet.tryValueOfIPv6("z" + cidrNotation + "z", 1, 1 + cidrNotation.length()));
+            int length = cidrNotation.length();
 
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.tryValueOfIPv6(cidrNotation, -1, cidrNotation.length()));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.tryValueOfIPv6(cidrNotation, 0, cidrNotation.length() + 1));
-            assertThrows(IndexOutOfBoundsException.class,
-                    () -> IPv6Subnet.tryValueOfIPv6(cidrNotation, cidrNotation.length() + 1, cidrNotation.length()));
+            assertEquals(expected, IPv6Subnet.tryValueOfIPv6(cidrNotation));
+            assertEquals(expected, IPv6Subnet.tryValueOfIPv6("1" + cidrNotation + "1", 1, 1 + length));
+            assertEquals(expected, IPv6Subnet.tryValueOfIPv6("z" + cidrNotation + "z", 1, 1 + length));
+
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.tryValueOfIPv6(cidrNotation, -1, length));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.tryValueOfIPv6(cidrNotation, 0, length + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.tryValueOfIPv6(cidrNotation, length + 1, length));
             assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.tryValueOfIPv6(cidrNotation, 0, -1));
         });
     }
@@ -327,13 +331,15 @@ class IPv6SubnetTest {
     private DynamicTest testIsIPv6Subnet(CharSequence s, boolean expected) {
         String displayName = String.valueOf(s);
         return dynamicTest(displayName.isEmpty() ? "empty" : displayName, () -> {
-            assertEquals(expected, IPv6Subnet.isIPv6Subnet(s));
-            assertEquals(expected, IPv6Subnet.isIPv6Subnet("1" + s + "1", 1, 1 + s.length()));
-            assertEquals(expected, IPv6Subnet.isIPv6Subnet("z" + s + "z", 1, 1 + s.length()));
+            int length = s.length();
 
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.isIPv6Subnet(s, -1, s.length()));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.isIPv6Subnet(s, 0, s.length() + 1));
-            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.isIPv6Subnet(s, s.length() + 1, s.length()));
+            assertEquals(expected, IPv6Subnet.isIPv6Subnet(s));
+            assertEquals(expected, IPv6Subnet.isIPv6Subnet("1" + s + "1", 1, 1 + length));
+            assertEquals(expected, IPv6Subnet.isIPv6Subnet("z" + s + "z", 1, 1 + length));
+
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.isIPv6Subnet(s, -1, length));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.isIPv6Subnet(s, 0, length + 1));
+            assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.isIPv6Subnet(s, length + 1, length));
             assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.isIPv6Subnet(s, 0, -1));
         });
     }
