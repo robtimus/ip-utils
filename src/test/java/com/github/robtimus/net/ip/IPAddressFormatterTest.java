@@ -161,7 +161,7 @@ class IPAddressFormatterTest {
         private DynamicTest testFormatBytesOfInvalidLength(IPAddressFormatter<IPv4Address> formatter, int length) {
             return dynamicTest(String.format("invalid length: %d", length), () -> {
                 IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> formatter.format(new byte[length]));
-                assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
+                assertEquals(Messages.IPAddress.invalidArraySize(length), exception.getMessage());
             });
         }
 
@@ -218,7 +218,7 @@ class IPAddressFormatterTest {
             return dynamicTest(String.format("invalid length: %d", length), () -> {
                 IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                         () -> formatter.append(new byte[length], new StringWriter()));
-                assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
+                assertEquals(Messages.IPAddress.invalidArraySize(length), exception.getMessage());
             });
         }
 
@@ -265,7 +265,7 @@ class IPAddressFormatterTest {
             return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                 ParseException exception = assertThrows(ParseException.class, () -> formatter.parse(source));
                 assertEquals(errorIndex, exception.getErrorOffset());
-                assertEquals(Messages.IPv4Address.parseError.get(source), exception.getMessage());
+                assertEquals(Messages.IPv4Address.parseError(source), exception.getMessage());
 
                 exception = assertThrows(ParseException.class, () -> formatter.parse("1" + source + "1", 1, 1 + source.length()));
                 assertEquals(errorIndex + 1, exception.getErrorOffset());
@@ -432,7 +432,7 @@ class IPAddressFormatterTest {
             return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                 ParseException exception = assertThrows(ParseException.class, () -> formatter.parseToBytes(source));
                 assertEquals(errorIndex, exception.getErrorOffset());
-                assertEquals(Messages.IPv4Address.parseError.get(source), exception.getMessage());
+                assertEquals(Messages.IPv4Address.parseError(source), exception.getMessage());
 
                 exception = assertThrows(ParseException.class, () -> formatter.parseToBytes("1" + source + "1", 1, 1 + source.length()));
                 assertEquals(errorIndex + 1, exception.getErrorOffset());
@@ -610,14 +610,14 @@ class IPAddressFormatterTest {
             private DynamicTest testFormatBytesOfInvalidLength(IPAddressFormat<IPv4Address> format, int length) {
                 return dynamicTest(String.format("invalid length: %d", length), () -> {
                     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> format.format(new byte[length]));
-                    assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
+                    assertEquals(Messages.IPAddress.invalidArraySize(length), exception.getMessage());
                 });
             }
 
             private DynamicTest testFormatUnsupportedObject(IPAddressFormat<IPv4Address> format, Object object) {
                 return dynamicTest(String.format("unsupported: %s", object), () -> {
                     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> format.format(object));
-                    assertEquals(Messages.IPAddressFormat.unformattableObject.get(object), exception.getMessage());
+                    assertEquals(Messages.IPAddressFormat.unformattableObject(object), exception.getMessage());
                 });
             }
 
@@ -1202,9 +1202,9 @@ class IPAddressFormatterTest {
             return dynamicTest(String.format("invalid length: %d", length), () -> {
                 IllegalArgumentException exception;
                 exception = assertThrows(IllegalArgumentException.class, () -> formatter.format(new byte[length]));
-                assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
+                assertEquals(Messages.IPAddress.invalidArraySize(length), exception.getMessage());
                 exception = assertThrows(IllegalArgumentException.class, () -> formatter.format(new byte[length], new StringBuilder()));
-                assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
+                assertEquals(Messages.IPAddress.invalidArraySize(length), exception.getMessage());
             });
         }
 
@@ -1270,7 +1270,7 @@ class IPAddressFormatterTest {
             return dynamicTest(String.format("invalid length: %d", length), () -> {
                 IllegalArgumentException exception;
                 exception = assertThrows(IllegalArgumentException.class, () -> formatter.append(new byte[length], new StringWriter()));
-                assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
+                assertEquals(Messages.IPAddress.invalidArraySize(length), exception.getMessage());
             });
         }
 
@@ -1335,14 +1335,14 @@ class IPAddressFormatterTest {
             return dynamicTest(String.format("invalid length: %d", length), () -> {
                 IllegalArgumentException exception;
                 exception = assertThrows(IllegalArgumentException.class, () -> format.format(new byte[length]));
-                assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
+                assertEquals(Messages.IPAddress.invalidArraySize(length), exception.getMessage());
             });
         }
 
         private DynamicTest testFormatSpecificAsFormatFormatUnsupportedObject(IPAddressFormat<IPv6Address> format, Object object) {
             return dynamicTest(String.format("unsupported: %s", object), () -> {
                 IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> format.format(object));
-                assertEquals(Messages.IPAddressFormat.unformattableObject.get(object), exception.getMessage());
+                assertEquals(Messages.IPAddressFormat.unformattableObject(object), exception.getMessage());
             });
         }
 
@@ -1517,7 +1517,7 @@ class IPAddressFormatterTest {
                 return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                     ParseException exception = assertThrows(ParseException.class, () -> formatter.parse(source));
                     assertEquals(errorIndex, exception.getErrorOffset());
-                    assertEquals(Messages.IPv6Address.parseError.get(source), exception.getMessage());
+                    assertEquals(Messages.IPv6Address.parseError(source), exception.getMessage());
 
                     exception = assertThrows(ParseException.class, () -> formatter.parse("1" + source + "1", 1, 1 + source.length()));
                     assertEquals(errorIndex + 1, exception.getErrorOffset());
@@ -2043,7 +2043,7 @@ class IPAddressFormatterTest {
                 return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                     ParseException exception = assertThrows(ParseException.class, () -> formatter.parseToBytes(source));
                     assertEquals(errorIndex, exception.getErrorOffset());
-                    assertEquals(Messages.IPv6Address.parseError.get(source), exception.getMessage());
+                    assertEquals(Messages.IPv6Address.parseError(source), exception.getMessage());
 
                     exception = assertThrows(ParseException.class, () -> formatter.parseToBytes("1" + source + "1", 1, 1 + source.length()));
                     assertEquals(errorIndex + 1, exception.getErrorOffset());
@@ -3506,9 +3506,9 @@ class IPAddressFormatterTest {
             return dynamicTest(String.format("invalid length: %d", length), () -> {
                 IllegalArgumentException exception;
                 exception = assertThrows(IllegalArgumentException.class, () -> formatter.format(new byte[length]));
-                assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
+                assertEquals(Messages.IPAddress.invalidArraySize(length), exception.getMessage());
                 exception = assertThrows(IllegalArgumentException.class, () -> formatter.format(new byte[length], new StringBuilder()));
-                assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
+                assertEquals(Messages.IPAddress.invalidArraySize(length), exception.getMessage());
             });
         }
 
@@ -3595,7 +3595,7 @@ class IPAddressFormatterTest {
             return dynamicTest(String.format("invalid length: %d", length), () -> {
                 IllegalArgumentException exception;
                 exception = assertThrows(IllegalArgumentException.class, () -> formatter.append(new byte[length], new StringWriter()));
-                assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
+                assertEquals(Messages.IPAddress.invalidArraySize(length), exception.getMessage());
             });
         }
 
@@ -3672,14 +3672,14 @@ class IPAddressFormatterTest {
             return dynamicTest(String.format("invalid length: %d", length), () -> {
                 IllegalArgumentException exception;
                 exception = assertThrows(IllegalArgumentException.class, () -> format.format(new byte[length]));
-                assertEquals(Messages.IPAddress.invalidArraySize.get(length), exception.getMessage());
+                assertEquals(Messages.IPAddress.invalidArraySize(length), exception.getMessage());
             });
         }
 
         private DynamicTest testFormatSpecificAsFormatFormatUnsupportedObject(IPAddressFormat<?> format, Object object) {
             return dynamicTest(String.format("unsupported: %s", object), () -> {
                 IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> format.format(object));
-                assertEquals(Messages.IPAddressFormat.unformattableObject.get(object), exception.getMessage());
+                assertEquals(Messages.IPAddressFormat.unformattableObject(object), exception.getMessage());
             });
         }
 
@@ -3870,7 +3870,7 @@ class IPAddressFormatterTest {
                 return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                     ParseException exception = assertThrows(ParseException.class, () -> formatter.parse(source));
                     assertEquals(errorIndex, exception.getErrorOffset());
-                    assertEquals(Messages.IPAddress.parseError.get(source), exception.getMessage());
+                    assertEquals(Messages.IPAddress.parseError(source), exception.getMessage());
 
                     exception = assertThrows(ParseException.class, () -> formatter.parse("1" + source + "1", 1, 1 + source.length()));
                     assertEquals(errorIndex + 1, exception.getErrorOffset());
@@ -4444,7 +4444,7 @@ class IPAddressFormatterTest {
                 return dynamicTest(source.isEmpty() ? "empty" : source, () -> {
                     ParseException exception = assertThrows(ParseException.class, () -> formatter.parseToBytes(source));
                     assertEquals(errorIndex, exception.getErrorOffset());
-                    assertEquals(Messages.IPAddress.parseError.get(source), exception.getMessage());
+                    assertEquals(Messages.IPAddress.parseError(source), exception.getMessage());
 
                     exception = assertThrows(ParseException.class, () -> formatter.parseToBytes("1" + source + "1", 1, 1 + source.length()));
                     assertEquals(errorIndex + 1, exception.getErrorOffset());

@@ -72,7 +72,7 @@ class IPAddressTest {
     private DynamicTest testValueOfByteArrayOfInvalidLength(byte[] address) {
         return dynamicTest(Arrays.toString(address), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPAddress.valueOf(address));
-            assertEquals(Messages.IPAddress.invalidArraySize.get(address.length), exception.getMessage());
+            assertEquals(Messages.IPAddress.invalidArraySize(address.length), exception.getMessage());
         });
     }
 
@@ -107,7 +107,7 @@ class IPAddressTest {
     private DynamicTest testValueOfInvalidCharSequence(String address) {
         return dynamicTest(address, () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPAddress.valueOf(address));
-            assertEquals(Messages.IPAddress.invalidIPAddress.get(address), exception.getMessage());
+            assertEquals(Messages.IPAddress.invalidIPAddress(address), exception.getMessage());
         });
     }
 

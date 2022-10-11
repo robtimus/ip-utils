@@ -150,7 +150,7 @@ class IPv6SubnetTest {
     private DynamicTest testValueOfCIDRNotationInvalidFormat(CharSequence cidrNotation) {
         return dynamicTest(cidrNotation.toString(), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv6Subnet.valueOf(cidrNotation));
-            assertEquals(Messages.Subnet.invalidCIDRNotation.get(cidrNotation), exception.getMessage());
+            assertEquals(Messages.Subnet.invalidCIDRNotation(cidrNotation), exception.getMessage());
 
             assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, -1, cidrNotation.length()));
             assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, 0, cidrNotation.length() + 1));
@@ -162,7 +162,7 @@ class IPv6SubnetTest {
     private DynamicTest testValueOfCIDRNotationInvalidRoutingPrefix(CharSequence cidrNotation, String routingPrefix, int prefixLength) {
         return dynamicTest(cidrNotation.toString(), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv6Subnet.valueOf(cidrNotation));
-            assertEquals(Messages.Subnet.invalidRoutingPrefix.get(routingPrefix, prefixLength), exception.getMessage());
+            assertEquals(Messages.Subnet.invalidRoutingPrefix(routingPrefix, prefixLength), exception.getMessage());
 
             assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, -1, cidrNotation.length()));
             assertThrows(IndexOutOfBoundsException.class, () -> IPv6Subnet.valueOf(cidrNotation, 0, cidrNotation.length() + 1));
@@ -174,7 +174,7 @@ class IPv6SubnetTest {
     private DynamicTest testValueOfCIDRNotationInvalidPrefixLength(int prefixLength) {
         return dynamicTest(String.format("invalid prefix length: %d", prefixLength), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv6Subnet.valueOf("::1/" + prefixLength));
-            assertEquals(Messages.IPAddress.invalidPrefixLength.get(prefixLength, IPv6Address.BITS), exception.getMessage());
+            assertEquals(Messages.IPAddress.invalidPrefixLength(prefixLength, IPv6Address.BITS), exception.getMessage());
         });
     }
 
@@ -277,14 +277,14 @@ class IPv6SubnetTest {
     private DynamicTest testValueOfWithIPAddressInvalidRoutingPrefix(CharSequence address, int prefixLength) {
         return dynamicTest(String.format("%s/%d", address, prefixLength), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv6Subnet.valueOf(address, prefixLength));
-            assertEquals(Messages.Subnet.invalidRoutingPrefix.get(address, prefixLength), exception.getMessage());
+            assertEquals(Messages.Subnet.invalidRoutingPrefix(address, prefixLength), exception.getMessage());
         });
     }
 
     private DynamicTest testValueOfWithIPAddressInvalidPrefixLength(int prefixLength) {
         return dynamicTest(String.format("invalid prefix length: %d", prefixLength), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv6Subnet.valueOf("::1", prefixLength));
-            assertEquals(Messages.IPAddress.invalidPrefixLength.get(prefixLength, IPv6Address.BITS), exception.getMessage());
+            assertEquals(Messages.IPAddress.invalidPrefixLength(prefixLength, IPv6Address.BITS), exception.getMessage());
         });
     }
 

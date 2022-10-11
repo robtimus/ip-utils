@@ -232,7 +232,7 @@ public final class IPv4Address extends IPAddress<IPv4Address> {
     @Override
     public IPv4Range to(IPv4Address end) {
         if (this.compareTo(end) > 0) {
-            throw new IllegalArgumentException(Messages.IPRange.toSmallerThanFrom.get(end, this));
+            throw new IllegalArgumentException(Messages.IPRange.toSmallerThanFrom(end, this));
         }
         return this.equals(end) ? asRange() : new IPRangeImpl.IPv4(this, end);
     }
@@ -255,7 +255,7 @@ public final class IPv4Address extends IPAddress<IPv4Address> {
     IPv4Subnet startingSubnet(IPv4Address netmask) {
         int prefixLength = prefixLengthOfNetmask(netmask);
         if (prefixLength == -1) {
-            throw new IllegalArgumentException(Messages.Subnet.invalidNetmask.get(netmask));
+            throw new IllegalArgumentException(Messages.Subnet.invalidNetmask(netmask));
         }
         return inSubnet(netmask, prefixLength, true);
     }
@@ -270,7 +270,7 @@ public final class IPv4Address extends IPAddress<IPv4Address> {
         int routingPrefixAddress = address & netmask.address;
         if (address != routingPrefixAddress) {
             if (mustStart) {
-                throw new IllegalArgumentException(Messages.Subnet.invalidRoutingPrefix.get(this, prefixLength));
+                throw new IllegalArgumentException(Messages.Subnet.invalidRoutingPrefix(this, prefixLength));
             }
             routingPrefix = valueOf(routingPrefixAddress);
         }
@@ -326,7 +326,7 @@ public final class IPv4Address extends IPAddress<IPv4Address> {
 
     private static void validateOctet(int octet) {
         if (octet < 0 || octet > 255) {
-            throw new IllegalArgumentException(Messages.IPv4Address.invalidOctet.get(octet));
+            throw new IllegalArgumentException(Messages.IPv4Address.invalidOctet(octet));
         }
     }
 
@@ -340,7 +340,7 @@ public final class IPv4Address extends IPAddress<IPv4Address> {
      */
     public static IPv4Address valueOf(byte[] address) {
         if (address.length != BYTES) {
-            throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize.get(address.length));
+            throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize(address.length));
         }
 
         return valueOf(addressToInt(address));
@@ -427,7 +427,7 @@ public final class IPv4Address extends IPAddress<IPv4Address> {
      */
     public static IPv4Address getNetmask(int prefixLength) {
         if (prefixLength < 0 || prefixLength > BITS) {
-            throw new IllegalArgumentException(Messages.IPAddress.invalidPrefixLength.get(prefixLength, BITS));
+            throw new IllegalArgumentException(Messages.IPAddress.invalidPrefixLength(prefixLength, BITS));
         }
         return NETMASKS[prefixLength];
     }

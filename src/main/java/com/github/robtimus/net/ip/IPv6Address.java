@@ -116,7 +116,7 @@ public final class IPv6Address extends IPAddress<IPv6Address> {
         if (isIPv4Mapped()) {
             return IPv4Address.valueOf((int) (lowAddress & 0x0000_0000_FFFF_FFFFL));
         }
-        throw new IllegalStateException(Messages.IPv6Address.notIPv4Mapped.get(this));
+        throw new IllegalStateException(Messages.IPv6Address.notIPv4Mapped(this));
     }
 
     /**
@@ -276,7 +276,7 @@ public final class IPv6Address extends IPAddress<IPv6Address> {
     @Override
     public IPv6Range to(IPv6Address end) {
         if (this.compareTo(end) > 0) {
-            throw new IllegalArgumentException(Messages.IPRange.toSmallerThanFrom.get(end, this));
+            throw new IllegalArgumentException(Messages.IPRange.toSmallerThanFrom(end, this));
         }
         return this.equals(end) ? asRange() : new IPRangeImpl.IPv6(this, end);
     }
@@ -303,7 +303,7 @@ public final class IPv6Address extends IPAddress<IPv6Address> {
         long routingPrefixLowAddress = lowAddress & netmask.lowAddress;
         if (highAddress != routingPrefixHighAddress || lowAddress != routingPrefixLowAddress) {
             if (mustStart) {
-                throw new IllegalArgumentException(Messages.Subnet.invalidRoutingPrefix.get(this, prefixLength));
+                throw new IllegalArgumentException(Messages.Subnet.invalidRoutingPrefix(this, prefixLength));
             }
             routingPrefix = valueOf(routingPrefixHighAddress, routingPrefixLowAddress);
         }
@@ -371,7 +371,7 @@ public final class IPv6Address extends IPAddress<IPv6Address> {
 
     private static void validateHextet(int hextet) {
         if (hextet < 0 || hextet > 0xFFFF) {
-            throw new IllegalArgumentException(Messages.IPv6Address.invalidHextet.get(hextet));
+            throw new IllegalArgumentException(Messages.IPv6Address.invalidHextet(hextet));
         }
     }
 
@@ -385,7 +385,7 @@ public final class IPv6Address extends IPAddress<IPv6Address> {
      */
     public static IPv6Address valueOf(byte[] address) {
         if (address.length != BYTES) {
-            throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize.get(address.length));
+            throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize(address.length));
         }
 
         long highAddress = addressToHighAddress(address);
@@ -465,7 +465,7 @@ public final class IPv6Address extends IPAddress<IPv6Address> {
 
     static IPv6Address getNetmask(int prefixLength) {
         if (prefixLength < 0 || prefixLength > BITS) {
-            throw new IllegalArgumentException(Messages.IPAddress.invalidPrefixLength.get(prefixLength, BITS));
+            throw new IllegalArgumentException(Messages.IPAddress.invalidPrefixLength(prefixLength, BITS));
         }
         return NETMASKS[prefixLength];
     }

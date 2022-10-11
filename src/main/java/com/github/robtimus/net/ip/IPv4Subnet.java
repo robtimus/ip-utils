@@ -76,12 +76,12 @@ public final class IPv4Subnet extends Subnet<IPv4Address> implements IPv4Range {
     public static IPv4Subnet valueOf(CharSequence cidrNotation, int start, int end) {
         int index = indexOf(cidrNotation, '/', start, end);
         if (index == -1) {
-            throw new IllegalArgumentException(Messages.Subnet.invalidCIDRNotation.get(cidrNotation));
+            throw new IllegalArgumentException(Messages.Subnet.invalidCIDRNotation(cidrNotation));
         }
         IPv4Address routingPrefix = IPAddressFormatter.ipv4().tryParse(cidrNotation, start, index)
-                .orElseThrow(() -> new IllegalArgumentException(Messages.Subnet.invalidCIDRNotation.get(cidrNotation)));
+                .orElseThrow(() -> new IllegalArgumentException(Messages.Subnet.invalidCIDRNotation(cidrNotation)));
         int prefixLength = tryParseInt(cidrNotation, index + 1, end)
-                .orElseThrow(() -> new IllegalArgumentException(Messages.Subnet.invalidCIDRNotation.get(cidrNotation)));
+                .orElseThrow(() -> new IllegalArgumentException(Messages.Subnet.invalidCIDRNotation(cidrNotation)));
         return valueOf(routingPrefix, prefixLength);
     }
 

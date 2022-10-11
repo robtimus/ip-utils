@@ -76,12 +76,12 @@ public final class IPv6Subnet extends Subnet<IPv6Address> implements IPv6Range {
     public static IPv6Subnet valueOf(CharSequence cidrNotation, int start, int end) {
         int index = indexOf(cidrNotation, '/', start, end);
         if (index == -1) {
-            throw new IllegalArgumentException(Messages.Subnet.invalidCIDRNotation.get(cidrNotation));
+            throw new IllegalArgumentException(Messages.Subnet.invalidCIDRNotation(cidrNotation));
         }
         IPv6Address routingPrefix = IPAddressFormatter.ipv6WithDefaults().tryParse(cidrNotation, start, index)
-                .orElseThrow(() -> new IllegalArgumentException(Messages.Subnet.invalidCIDRNotation.get(cidrNotation)));
+                .orElseThrow(() -> new IllegalArgumentException(Messages.Subnet.invalidCIDRNotation(cidrNotation)));
         int prefixLength = tryParseInt(cidrNotation, index + 1, end)
-                .orElseThrow(() -> new IllegalArgumentException(Messages.Subnet.invalidCIDRNotation.get(cidrNotation)));
+                .orElseThrow(() -> new IllegalArgumentException(Messages.Subnet.invalidCIDRNotation(cidrNotation)));
         return valueOf(routingPrefix, prefixLength);
     }
 

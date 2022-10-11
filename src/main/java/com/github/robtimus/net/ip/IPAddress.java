@@ -231,7 +231,7 @@ public abstract class IPAddress<IP extends IPAddress<IP>> implements Comparable<
             case IPv6Address.BYTES:
                 return IPv6Address.valueOf(address);
             default:
-                throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize.get(address.length));
+                throw new IllegalArgumentException(Messages.IPAddress.invalidArraySize(address.length));
         }
     }
 

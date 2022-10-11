@@ -122,7 +122,7 @@ class IPv4SubnetTest {
     private DynamicTest testValueOfCIDRNotationInvalidFormat(CharSequence cidrNotation) {
         return dynamicTest(cidrNotation.toString(), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv4Subnet.valueOf(cidrNotation));
-            assertEquals(Messages.Subnet.invalidCIDRNotation.get(cidrNotation), exception.getMessage());
+            assertEquals(Messages.Subnet.invalidCIDRNotation(cidrNotation), exception.getMessage());
 
             assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.valueOf(cidrNotation, -1, cidrNotation.length()));
             assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.valueOf(cidrNotation, 0, cidrNotation.length() + 1));
@@ -134,7 +134,7 @@ class IPv4SubnetTest {
     private DynamicTest testValueOfCIDRNotationInvalidRoutingPrefix(CharSequence cidrNotation, String routingPrefix, int prefixLength) {
         return dynamicTest(cidrNotation.toString(), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv4Subnet.valueOf(cidrNotation));
-            assertEquals(Messages.Subnet.invalidRoutingPrefix.get(routingPrefix, prefixLength), exception.getMessage());
+            assertEquals(Messages.Subnet.invalidRoutingPrefix(routingPrefix, prefixLength), exception.getMessage());
 
             assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.valueOf(cidrNotation, -1, cidrNotation.length()));
             assertThrows(IndexOutOfBoundsException.class, () -> IPv4Subnet.valueOf(cidrNotation, 0, cidrNotation.length() + 1));
@@ -146,7 +146,7 @@ class IPv4SubnetTest {
     private DynamicTest testValueOfCIDRNotationInvalidPrefixLength(int prefixLength) {
         return dynamicTest(String.format("invalid prefix length: %d", prefixLength), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv4Subnet.valueOf("127.0.0.1/" + prefixLength));
-            assertEquals(Messages.IPAddress.invalidPrefixLength.get(prefixLength, IPv4Address.BITS), exception.getMessage());
+            assertEquals(Messages.IPAddress.invalidPrefixLength(prefixLength, IPv4Address.BITS), exception.getMessage());
         });
     }
 
@@ -229,14 +229,14 @@ class IPv4SubnetTest {
     private DynamicTest testValueOfWithIPAddressInvalidRoutingPrefix(CharSequence address, int prefixLength) {
         return dynamicTest(String.format("%s/%d", address, prefixLength), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv4Subnet.valueOf(address, prefixLength));
-            assertEquals(Messages.Subnet.invalidRoutingPrefix.get(address, prefixLength), exception.getMessage());
+            assertEquals(Messages.Subnet.invalidRoutingPrefix(address, prefixLength), exception.getMessage());
         });
     }
 
     private DynamicTest testValueOfWithIPAddressInvalidPrefixLength(int prefixLength) {
         return dynamicTest(String.format("invalid prefix length: %d", prefixLength), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv4Subnet.valueOf("127.0.0.1", prefixLength));
-            assertEquals(Messages.IPAddress.invalidPrefixLength.get(prefixLength, IPv4Address.BITS), exception.getMessage());
+            assertEquals(Messages.IPAddress.invalidPrefixLength(prefixLength, IPv4Address.BITS), exception.getMessage());
         });
     }
 
@@ -279,14 +279,14 @@ class IPv4SubnetTest {
     private DynamicTest testValueOfWithIPAddressInvalidRoutingPrefix(CharSequence address, CharSequence netmask, int prefixLength) {
         return dynamicTest(String.format("%s/%s", address, netmask), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv4Subnet.valueOf(address, netmask));
-            assertEquals(Messages.Subnet.invalidRoutingPrefix.get(address, prefixLength), exception.getMessage());
+            assertEquals(Messages.Subnet.invalidRoutingPrefix(address, prefixLength), exception.getMessage());
         });
     }
 
     private DynamicTest testValueOfWithIPAddressInvalidNetmask(CharSequence netmask) {
         return dynamicTest(String.format("invalid netmask: %s", netmask), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv4Subnet.valueOf("127.0.0.1", netmask));
-            assertEquals(Messages.Subnet.invalidNetmask.get(netmask), exception.getMessage());
+            assertEquals(Messages.Subnet.invalidNetmask(netmask), exception.getMessage());
         });
     }
 

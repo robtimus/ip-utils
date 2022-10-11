@@ -402,7 +402,7 @@ class IPv4AddressTest {
                 dynamicTest("MAX_VALUE to MIN_VALUE", () -> {
                     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                             () -> IPv4Address.MAX_VALUE.to(IPv4Address.MIN_VALUE));
-                    assertEquals(Messages.IPRange.toSmallerThanFrom.get(IPv4Address.MIN_VALUE, IPv4Address.MAX_VALUE), exception.getMessage());
+                    assertEquals(Messages.IPRange.toSmallerThanFrom(IPv4Address.MIN_VALUE, IPv4Address.MAX_VALUE), exception.getMessage());
                 }),
         };
     }
@@ -447,7 +447,7 @@ class IPv4AddressTest {
     private DynamicTest testInSubnetInvalidPrefixLength(int prefixLength) {
         return dynamicTest(String.format("invalid prefix length: %d", prefixLength), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv4Address.LOCALHOST.inSubnet(prefixLength));
-            assertEquals(Messages.IPAddress.invalidPrefixLength.get(prefixLength, IPv4Address.BITS), exception.getMessage());
+            assertEquals(Messages.IPAddress.invalidPrefixLength(prefixLength, IPv4Address.BITS), exception.getMessage());
         });
     }
 
@@ -487,7 +487,7 @@ class IPv4AddressTest {
     private DynamicTest testStartingSubnetInvalidRoutingPrefix(IPv4Address address, int prefixLength) {
         return dynamicTest(String.format("%s/%d", address, prefixLength), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> address.startingSubnet(prefixLength));
-            assertEquals(Messages.Subnet.invalidRoutingPrefix.get(address, prefixLength), exception.getMessage());
+            assertEquals(Messages.Subnet.invalidRoutingPrefix(address, prefixLength), exception.getMessage());
         });
     }
 
@@ -495,7 +495,7 @@ class IPv4AddressTest {
         return dynamicTest(String.format("invalid prefix length: %d", prefixLength), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                     () -> IPv4Address.MIN_VALUE.startingSubnet(prefixLength));
-            assertEquals(Messages.IPAddress.invalidPrefixLength.get(prefixLength, IPv4Address.BITS), exception.getMessage());
+            assertEquals(Messages.IPAddress.invalidPrefixLength(prefixLength, IPv4Address.BITS), exception.getMessage());
         });
     }
 
@@ -528,7 +528,7 @@ class IPv4AddressTest {
     private DynamicTest testStartingSubnetInvalidNetmask(IPv4Address netmask) {
         return dynamicTest(String.format("invalid netmask: %s", netmask), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv4Address.MIN_VALUE.startingSubnet(netmask));
-            assertEquals(Messages.Subnet.invalidNetmask.get(netmask), exception.getMessage());
+            assertEquals(Messages.Subnet.invalidNetmask(netmask), exception.getMessage());
         });
     }
 
@@ -559,7 +559,7 @@ class IPv4AddressTest {
         return dynamicTest(String.format("%d.%d.%d.%d", octet1, octet2, octet3, octet4), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                     () -> IPv4Address.valueOf(octet1, octet2, octet3, octet4));
-            assertEquals(Messages.IPv4Address.invalidOctet.get(firstInvalidOctet), exception.getMessage());
+            assertEquals(Messages.IPv4Address.invalidOctet(firstInvalidOctet), exception.getMessage());
         });
     }
 
@@ -585,7 +585,7 @@ class IPv4AddressTest {
     private DynamicTest testValueOfByteArrayOfInvalidSize(byte[] address) {
         return dynamicTest(Arrays.toString(address), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv4Address.valueOf(address));
-            assertEquals(Messages.IPAddress.invalidArraySize.get(address.length), exception.getMessage());
+            assertEquals(Messages.IPAddress.invalidArraySize(address.length), exception.getMessage());
         });
     }
 
@@ -623,7 +623,7 @@ class IPv4AddressTest {
     private DynamicTest testValueOfInvalidCharSequence(String address) {
         return dynamicTest(address, () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv4Address.valueOf(address));
-            assertEquals(Messages.IPv4Address.invalidIPv4Address.get(address), exception.getMessage());
+            assertEquals(Messages.IPv4Address.invalidIPv4Address(address), exception.getMessage());
 
             assertThrows(IndexOutOfBoundsException.class, () -> IPv4Address.valueOf(address, -1, address.length()));
             assertThrows(IndexOutOfBoundsException.class, () -> IPv4Address.valueOf(address, 0, address.length() + 1));
@@ -726,7 +726,7 @@ class IPv4AddressTest {
     private DynamicTest testGetNetmaskOfInvalidPrefixLength(int prefixLength) {
         return dynamicTest(Integer.toString(prefixLength), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv4Address.getNetmask(prefixLength));
-            assertEquals(Messages.IPAddress.invalidPrefixLength.get(prefixLength, IPv4Address.BITS), exception.getMessage());
+            assertEquals(Messages.IPAddress.invalidPrefixLength(prefixLength, IPv4Address.BITS), exception.getMessage());
         });
     }
 

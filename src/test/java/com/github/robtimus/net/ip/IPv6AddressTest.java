@@ -123,7 +123,7 @@ class IPv6AddressTest {
     private DynamicTest testToIPv4NotMapped(IPv6Address address) {
         return dynamicTest(address.toString(), () -> {
             IllegalStateException exception = assertThrows(IllegalStateException.class, () -> address.toIPv4());
-            assertEquals(Messages.IPv6Address.notIPv4Mapped.get(address), exception.getMessage());
+            assertEquals(Messages.IPv6Address.notIPv4Mapped(address), exception.getMessage());
         });
     }
 
@@ -472,7 +472,7 @@ class IPv6AddressTest {
                 dynamicTest("MAX_VALUE to MIN_VALUE", () -> {
                     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                             () -> IPv6Address.MAX_VALUE.to(IPv6Address.MIN_VALUE));
-                    assertEquals(Messages.IPRange.toSmallerThanFrom.get(IPv6Address.MIN_VALUE, IPv6Address.MAX_VALUE), exception.getMessage());
+                    assertEquals(Messages.IPRange.toSmallerThanFrom(IPv6Address.MIN_VALUE, IPv6Address.MAX_VALUE), exception.getMessage());
                 }),
         };
     }
@@ -528,7 +528,7 @@ class IPv6AddressTest {
     private DynamicTest testInSubnetInvalidPrefixLength(int prefixLength) {
         return dynamicTest(String.format("invalid prefix length: %d", prefixLength), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv6Address.LOCALHOST.inSubnet(prefixLength));
-            assertEquals(Messages.IPAddress.invalidPrefixLength.get(prefixLength, IPv6Address.BITS), exception.getMessage());
+            assertEquals(Messages.IPAddress.invalidPrefixLength(prefixLength, IPv6Address.BITS), exception.getMessage());
         });
     }
 
@@ -583,7 +583,7 @@ class IPv6AddressTest {
     private DynamicTest testStartingSubnetInvalidRoutingPrefix(IPv6Address address, int prefixLength) {
         return dynamicTest(String.format("%s/%d", address, prefixLength), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> address.startingSubnet(prefixLength));
-            assertEquals(Messages.Subnet.invalidRoutingPrefix.get(address, prefixLength), exception.getMessage());
+            assertEquals(Messages.Subnet.invalidRoutingPrefix(address, prefixLength), exception.getMessage());
         });
     }
 
@@ -591,7 +591,7 @@ class IPv6AddressTest {
         return dynamicTest(String.format("invalid prefix length: %d", prefixLength), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                     () -> IPv6Address.MIN_VALUE.startingSubnet(prefixLength));
-            assertEquals(Messages.IPAddress.invalidPrefixLength.get(prefixLength, IPv6Address.BITS), exception.getMessage());
+            assertEquals(Messages.IPAddress.invalidPrefixLength(prefixLength, IPv6Address.BITS), exception.getMessage());
         });
     }
 
@@ -635,7 +635,7 @@ class IPv6AddressTest {
         return dynamicTest(String.format("%x:%x:%x:%x:%x:%x:%x:%x", hextet1, hextet2, hextet3, hextet4, hextet5, hextet6, hextet7, hextet8), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                     () -> IPv6Address.valueOf(hextet1, hextet2, hextet3, hextet4, hextet5, hextet6, hextet7, hextet8));
-            assertEquals(Messages.IPv6Address.invalidHextet.get(firstInvalidHextet), exception.getMessage());
+            assertEquals(Messages.IPv6Address.invalidHextet(firstInvalidHextet), exception.getMessage());
         });
     }
 
@@ -667,7 +667,7 @@ class IPv6AddressTest {
     private DynamicTest testValueOfByteArrayOfInvalidSize(byte[] address) {
         return dynamicTest(Arrays.toString(address), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv6Address.valueOf(address));
-            assertEquals(Messages.IPAddress.invalidArraySize.get(address.length), exception.getMessage());
+            assertEquals(Messages.IPAddress.invalidArraySize(address.length), exception.getMessage());
         });
     }
 
@@ -708,7 +708,7 @@ class IPv6AddressTest {
     private DynamicTest testValueOfInvalidCharSequence(String address) {
         return dynamicTest(address, () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv6Address.valueOf(address));
-            assertEquals(Messages.IPv6Address.invalidIPv6Address.get(address), exception.getMessage());
+            assertEquals(Messages.IPv6Address.invalidIPv6Address(address), exception.getMessage());
 
             assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, -1, address.length()));
             assertThrows(IndexOutOfBoundsException.class, () -> IPv6Address.valueOf(address, 0, address.length() + 1));
@@ -912,7 +912,7 @@ class IPv6AddressTest {
     private DynamicTest testGetNetmaskOfInvalidPrefixLength(int prefixLength) {
         return dynamicTest(Integer.toString(prefixLength), () -> {
             IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> IPv6Address.getNetmask(prefixLength));
-            assertEquals(Messages.IPAddress.invalidPrefixLength.get(prefixLength, IPv6Address.BITS), exception.getMessage());
+            assertEquals(Messages.IPAddress.invalidPrefixLength(prefixLength, IPv6Address.BITS), exception.getMessage());
         });
     }
 
