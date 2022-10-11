@@ -46,6 +46,9 @@ final class Bytes {
     private static final int INT_SIGN_BIT = 1 << 31;
     private static final int INT_OTHER_BITS = ~INT_SIGN_BIT;
 
+    private static final long LONG_SIGN_BIT = 1L << 63;
+    private static final long LONG_OTHER_BITS = ~LONG_SIGN_BIT;
+
     private Bytes() {
         throw new IllegalStateException("cannot create instances of " + getClass().getName()); //$NON-NLS-1$
     }
@@ -128,12 +131,50 @@ final class Bytes {
     }
 
     static int mid(int low, int high) {
-        int positiveLow = low & INT_OTHER_BITS;
-        int positiveHigh = high & INT_OTHER_BITS;
-        return ((positiveLow + positiveHigh) >>> 1) + midSignBit(low & INT_SIGN_BIT, high & INT_SIGN_BIT);
+        return positiveMid(low, high) + signMid(low, high);
     }
 
-    private static int midSignBit(int low, int high) {
-        return low == high ? low : 1 << 30;
+    private static int positiveMid(int low, int high) {
+        int positiveLow = low & INT_OTHER_BITS;
+        int positiveHigh = high & INT_OTHER_BITS;
+        return (positiveLow + positiveHigh) >>> 1;
+    }
+
+    private static int signMid(int low, int high) {
+        int signLow = low & INT_SIGN_BIT;
+        int signHigh = high & INT_SIGN_BIT;
+        if (signLow == signHigh) {
+            // Both sign bits are 0 or both 1; the mid is the same
+            return signLow;
+        }
+        // Exactly one sign bit is set; the mid is the sign bit divided by 2 (using bit shift)
+        return INT_SIGN_BIT >>> 1;
+    }
+
+    static long mid(long low, long high) {
+        return positiveMid(low, high) + signMid(low, high);
+    }
+
+    private static long positiveMid(long low, long high) {
+        long positiveLow = low & LONG_OTHER_BITS;
+        long positiveHigh = high & LONG_OTHER_BITS;
+        return (positiveLow + positiveHigh) >>> 1;
+    }
+
+    private static long signMid(long low, long high) {
+        long signLow = low & LONG_SIGN_BIT;
+        long signHigh = high & LONG_SIGN_BIT;
+        if (signLow == signHigh) {
+            // Both sign bits 0 or both 1; the mid is the same
+            return signLow;
+        }
+        // Exactly one sign bit is set; the mid is the sign bit divided by 2 (using bit shift)
+        return LONG_SIGN_BIT >>> 1;
+    }
+
+    static long overflowLow(long low, long high) {
+        long bitLow = low & 1L;
+        long bitHigh = high & 1L;
+        return bitLow == bitHigh ? 0 : LONG_SIGN_BIT;
     }
 }

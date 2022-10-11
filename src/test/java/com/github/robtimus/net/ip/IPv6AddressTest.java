@@ -29,6 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import java.math.BigInteger;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -407,6 +408,12 @@ class IPv6AddressTest {
     @DisplayName("mid")
     void testMid(IPv6Address low, IPv6Address high, IPv6Address expected) {
         assertEquals(expected, low.mid(high));
+
+        // Validate that the expected value is correct using BigDecimal
+        BigInteger lowValue = new BigInteger(1, low.toByteArray());
+        BigInteger highValue = new BigInteger(1, high.toByteArray());
+        BigInteger expectedValue = lowValue.add(highValue).divide(BigInteger.valueOf(2));
+        assertEquals(expectedValue, new BigInteger(1, expected.toByteArray()));
     }
 
     static Arguments[] testMid() {
@@ -426,6 +433,22 @@ class IPv6AddressTest {
                         IPv6Address.valueOf(Long.MAX_VALUE, 0x8000_0000_7FFF_FFFFL)),
                 arguments(IPv6Address.valueOf(IPv6Address.MAX_HIGH_ADDRESS, Integer.MAX_VALUE + 1L), IPv6Address.valueOf(0, Integer.MAX_VALUE),
                         IPv6Address.valueOf(Long.MAX_VALUE, 0x8000_0000_7FFF_FFFFL)),
+                arguments(IPv6Address.valueOf(0, IPv6Address.MAX_LOW_ADDRESS), IPv6Address.valueOf(1, 0),
+                        IPv6Address.valueOf(0, IPv6Address.MAX_LOW_ADDRESS)),
+                arguments(IPv6Address.valueOf(0, IPv6Address.MAX_LOW_ADDRESS), IPv6Address.valueOf(2, 0),
+                        IPv6Address.valueOf(1, 0x7FFF_FFFF_FFFF_FFFFL)),
+                arguments(IPv6Address.valueOf(0, IPv6Address.MAX_LOW_ADDRESS), IPv6Address.valueOf(3, 0),
+                        IPv6Address.valueOf(1, 0xFFFF_FFFF_FFFF_FFFFL)),
+                arguments(IPv6Address.valueOf(0, 0), IPv6Address.valueOf(3, 0), IPv6Address.valueOf(1, 0x8000_0000_0000_0000L)),
+                arguments(IPv6Address.valueOf(0, 0), IPv6Address.valueOf(4, 0), IPv6Address.valueOf(2, 0)),
+                arguments(IPv6Address.valueOf(0, IPv6Address.MAX_LOW_ADDRESS), IPv6Address.valueOf(1, IPv6Address.MAX_LOW_ADDRESS),
+                        IPv6Address.valueOf(1, 0x7FFF_FFFF_FFFF_FFFFL)),
+                arguments(IPv6Address.valueOf(0, IPv6Address.MAX_LOW_ADDRESS), IPv6Address.valueOf(2, IPv6Address.MAX_LOW_ADDRESS),
+                        IPv6Address.valueOf(1, IPv6Address.MAX_LOW_ADDRESS)),
+                arguments(IPv6Address.valueOf(0, 0xf000_0000_0000_0000L), IPv6Address.valueOf(1, 0),
+                        IPv6Address.valueOf(0, 0xf800_0000_0000_0000L)),
+                arguments(IPv6Address.valueOf(0, 0xf000_0000_0000_0000L), IPv6Address.valueOf(2, 0),
+                        IPv6Address.valueOf(1, 0x7800_0000_0000_0000L)),
         };
     }
 

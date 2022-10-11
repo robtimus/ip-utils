@@ -24,7 +24,6 @@ import static com.github.robtimus.net.ip.Bytes.HSHIFT3;
 import static com.github.robtimus.net.ip.Bytes.addressToHighAddress;
 import static com.github.robtimus.net.ip.Bytes.addressToLowAddress;
 import static com.github.robtimus.net.ip.Bytes.longsToAddress;
-import java.math.BigInteger;
 import java.net.Inet6Address;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -37,8 +36,6 @@ import java.util.function.Predicate;
  * @author Rob Spoor
  */
 public final class IPv6Address extends IPAddress<IPv6Address> {
-
-    private static final BigInteger TWO = BigInteger.valueOf(2L);
 
     static final long LOCALHOST_HIGH_ADDRESS = 0L;
     static final long LOCALHOST_LOW_ADDRESS = 1L;
@@ -82,8 +79,6 @@ public final class IPv6Address extends IPAddress<IPv6Address> {
 
     final long highAddress;
     final long lowAddress;
-
-    private BigInteger fullAddress = null;
 
     IPv6Address(long highAddress, long lowAddress) {
         this.highAddress = highAddress;
@@ -256,25 +251,26 @@ public final class IPv6Address extends IPAddress<IPv6Address> {
     }
 
     IPv6Address mid(IPv6Address high) {
-        BigInteger midAddress = address().add(high.address()).divide(TWO);
-        long midHighAddress = addressToHighAddress(midAddress);
-        long midLowAddress = addressToLowAddress(midAddress);
-        if (midHighAddress == highAddress && midLowAddress == lowAddress) {
+        long midLowAddress = Bytes.mid(lowAddress, high.lowAddress);
+        long midHighAddress = Bytes.mid(highAddress, high.highAddress);
+
+        long overflowLow = Bytes.overflowLow(highAddress, high.highAddress);
+        if (overflowLow != 0) {
+            long newMidLowAddress = midLowAddress + overflowLow;
+            if (Long.compareUnsigned(midLowAddress, newMidLowAddress) > 0) {
+                // midLowAddress overflows to midHighAddress
+                midHighAddress++;
+            }
+            midLowAddress = newMidLowAddress;
+        }
+
+        if (midLowAddress == lowAddress && midHighAddress == highAddress) {
             return this;
         }
-        if (midHighAddress == high.highAddress && midLowAddress == high.lowAddress) {
+        if (midLowAddress == high.lowAddress && midHighAddress == high.highAddress) {
             return high;
         }
-        IPv6Address mid = valueOf(midHighAddress, midLowAddress);
-        mid.fullAddress = midAddress;
-        return mid;
-    }
-
-    private BigInteger address() {
-        if (fullAddress == null) {
-            fullAddress = new BigInteger(1, toByteArray());
-        }
-        return fullAddress;
+        return valueOf(midHighAddress, midLowAddress);
     }
 
     @Override

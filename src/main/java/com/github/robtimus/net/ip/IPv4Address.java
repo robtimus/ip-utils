@@ -223,7 +223,10 @@ public final class IPv4Address extends IPAddress<IPv4Address> {
 
     IPv4Address mid(IPv4Address high) {
         int mid = Bytes.mid(address, high.address);
-        return Integer.compareUnsigned(address, mid) >= 0 ? this : valueOf(mid);
+        if (mid == address) {
+            return this;
+        }
+        return valueOf(mid);
     }
 
     @Override
