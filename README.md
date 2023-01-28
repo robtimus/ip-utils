@@ -1,4 +1,9 @@
 # ip-utils
+[![Maven Central](https://img.shields.io/maven-central/v/com.github.robtimus/ip-utils)](https://search.maven.org/artifact/com.github.robtimus/ip-utils)
+[![Build Status](https://github.com/robtimus/ip-utils/actions/workflows/build.yml/badge.svg)](https://github.com/robtimus/ip-utils/actions/workflows/build.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=com.github.robtimus%3Aip-utils&metric=alert_status)](https://sonarcloud.io/summary/overall?id=com.github.robtimus%3Aip-utils)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=com.github.robtimus%3Aip-utils&metric=coverage)](https://sonarcloud.io/summary/overall?id=com.github.robtimus%3Aip-utils)
+[![Known Vulnerabilities](https://snyk.io/test/github/robtimus/ip-utils/badge.svg)](https://snyk.io/test/github/robtimus/ip-utils)
 
 A set of utility classes for working with IP addresses. Its most important features:
 
