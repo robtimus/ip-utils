@@ -36,7 +36,7 @@ import java.util.function.Predicate;
  */
 public abstract class IPAddress<IP extends IPAddress<IP>> implements Comparable<IP> {
 
-    private String ipAddress;
+    private String ipAddressString;
 
     private InetAddress inetAddress;
 
@@ -106,10 +106,10 @@ public abstract class IPAddress<IP extends IPAddress<IP>> implements Comparable<
      */
     @Override
     public String toString() {
-        if (ipAddress == null) {
-            ipAddress = format();
+        if (ipAddressString == null) {
+            ipAddressString = format();
         }
-        return ipAddress;
+        return ipAddressString;
     }
 
     abstract String format();
