@@ -131,7 +131,7 @@ abstract class SingletonIPRange<IP extends IPAddress<IP>> implements IPRange<IP>
 
     @Override
     public int hashCode() {
-        return ip.hashCode() ^ ip.hashCode();
+        return ip.hashCode() * 31 + ip.hashCode();
     }
 
     @Override

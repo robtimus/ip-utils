@@ -271,7 +271,7 @@ public interface IPRange<IP extends IPAddress<IP>> extends Collection<IP> {
     /**
      * Returns the hash code value for this IP range.
      * The hash code of an IP range is defined to be the result of the following calculation:
-     * <pre>{@code from().hashCode() ^ to().hashCode()}</pre>
+     * <pre>{@code from().hashCode() * 31 + to().hashCode()}</pre>
      * This ensures that {@code range1.equals(range2)} implies that {@code range1.hashCode() == range2.hashCode()} for any two IP ranges
      * {@code range1} and {@code range2}, as required by the general contract of {@link Object#hashCode()}.
      */

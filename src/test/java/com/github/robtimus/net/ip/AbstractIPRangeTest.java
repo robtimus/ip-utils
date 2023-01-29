@@ -18,6 +18,7 @@
 package com.github.robtimus.net.ip;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import java.util.function.BiConsumer;
 import org.junit.jupiter.api.Assertions;
@@ -59,7 +60,8 @@ class AbstractIPRangeTest {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
         assertEquals(ipRange.hashCode(), ipRange.hashCode());
-        assertEquals(address.previous().hashCode() ^ address.next().hashCode(), ipRange.hashCode());
+        assertEquals(address.previous().hashCode() * 31 + address.next().hashCode(), ipRange.hashCode());
+        assertNotEquals(0, ipRange.hashCode());
     }
 
     private static final class TestRange extends AbstractIPRange<IPv4Address> {

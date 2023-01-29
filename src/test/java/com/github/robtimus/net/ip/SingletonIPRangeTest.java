@@ -20,6 +20,7 @@ package com.github.robtimus.net.ip;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -178,7 +179,8 @@ class SingletonIPRangeTest {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<?> ipRange = new SingletonIPRange.IPv4(address);
         assertEquals(ipRange.hashCode(), ipRange.hashCode());
-        assertEquals(address.hashCode() ^ address.hashCode(), ipRange.hashCode());
+        assertEquals(address.hashCode() * 31 + address.hashCode(), ipRange.hashCode());
+        assertNotEquals(0, ipRange.hashCode());
     }
 
     @Test

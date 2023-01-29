@@ -49,10 +49,10 @@ public abstract class AbstractIPRange<IP extends IPAddress<IP>> implements IPRan
     /**
      * {@inheritDoc}
      * <p>
-     * This implementation returns {@code from().hashCode() ^ to().hashCode()} according to the contract of {@link IPRange#hashCode()}.
+     * This implementation returns {@code from().hashCode() * 31 + to().hashCode()} according to the contract of {@link IPRange#hashCode()}.
      */
     @Override
     public int hashCode() {
-        return from().hashCode() ^ to().hashCode();
+        return from().hashCode() * 31 + to().hashCode();
     }
 }
