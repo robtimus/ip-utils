@@ -118,6 +118,8 @@ public abstract class IPAddressFormat<IP extends IPAddress<?>> extends Format {
     }
 
     /**
+     * {@inheritDoc}
+     *
      * @deprecated {@code IPAddressFormat} instances are immutable, and should not be cloned.
      */
     @Override
