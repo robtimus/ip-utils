@@ -32,9 +32,9 @@ import java.util.function.Predicate;
  * Unlike {@link InetAddress}, this class is more lightweight and contains only the IP address itself, not host names.
  *
  * @author Rob Spoor
- * @param <IP> The IP address subclass.
+ * @param <I> The IP address subclass.
  */
-public abstract class IPAddress<IP extends IPAddress<IP>> implements Comparable<IP> {
+public abstract class IPAddress<I extends IPAddress<I>> implements Comparable<I> {
 
     private String ipAddressString;
 
@@ -168,7 +168,7 @@ public abstract class IPAddress<IP extends IPAddress<IP>> implements Comparable<
      * @throws NoSuchElementException If there is no next IP address.
      * @see #hasNext()
      */
-    public abstract IP next();
+    public abstract I next();
 
     /**
      * Returns whether or not there is a previous IP address.
@@ -184,7 +184,7 @@ public abstract class IPAddress<IP extends IPAddress<IP>> implements Comparable<
      * @throws NoSuchElementException If there is no previous IP address.
      * @see #hasPrevious()
      */
-    public abstract IP previous();
+    public abstract I previous();
 
     /**
      * Returns an IP range starting at this IP address and ending in another IP address.
@@ -194,14 +194,14 @@ public abstract class IPAddress<IP extends IPAddress<IP>> implements Comparable<
      * @throws NullPointerException If the given IP address is {@code null}.
      * @throws IllegalArgumentException If the given IP address is smaller than this IP address.
      */
-    public abstract IPRange<IP> to(IP end);
+    public abstract IPRange<I> to(I end);
 
     /**
      * Returns an IP range containing only this IP address.
      *
      * @return An IP range containing only this IP address.
      */
-    public abstract IPRange<IP> asRange();
+    public abstract IPRange<I> asRange();
 
     /**
      * Returns a subnet of a specific prefix length that contains this IP address.
@@ -210,9 +210,9 @@ public abstract class IPAddress<IP extends IPAddress<IP>> implements Comparable<
      * @return A subnet of the given prefix length that contains this IP address.
      * @throws IllegalArgumentException If the prefix length is negative or larger than {@link #bits()}.
      */
-    public abstract Subnet<IP> inSubnet(int prefixLength);
+    public abstract Subnet<I> inSubnet(int prefixLength);
 
-    abstract Subnet<IP> startingSubnet(int prefixLength);
+    abstract Subnet<I> startingSubnet(int prefixLength);
 
     abstract boolean isValidRoutingPrefix(int prefixLength);
 

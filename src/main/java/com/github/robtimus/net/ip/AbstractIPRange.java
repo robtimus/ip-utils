@@ -21,9 +21,9 @@ package com.github.robtimus.net.ip;
  * A skeleton implementation of the {@link IPRange} interface.
  *
  * @author Rob Spoor
- * @param <IP> The type of IP address in the range.
+ * @param <I> The type of IP address in the range.
  */
-public abstract class AbstractIPRange<IP extends IPAddress<IP>> implements IPRange<IP> {
+public abstract class AbstractIPRange<I extends IPAddress<I>> implements IPRange<I> {
 
     // Comparison and hashing
 

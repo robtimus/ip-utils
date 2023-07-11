@@ -34,9 +34,9 @@ import java.util.function.Predicate;
  * {@link #toArray(Object[])} can cause {@link OutOfMemoryError}s.
  *
  * @author Rob Spoor
- * @param <IP> The type of IP address in the range.
+ * @param <I> The type of IP address in the range.
  */
-public interface IPRange<IP extends IPAddress<IP>> extends Collection<IP> {
+public interface IPRange<I extends IPAddress<I>> extends Collection<I> {
 
     // Query Operations
 
@@ -45,7 +45,7 @@ public interface IPRange<IP extends IPAddress<IP>> extends Collection<IP> {
      *
      * @return The first IP address in this range.
      */
-    IP from();
+    I from();
 
     /**
      * Returns the last IP address in this range.
@@ -53,7 +53,7 @@ public interface IPRange<IP extends IPAddress<IP>> extends Collection<IP> {
      *
      * @return The last IP address in this range.
      */
-    IP to();
+    I to();
 
     /**
      * Returns the number of IP addresses in this IP range. This number must be at least 1.
@@ -80,7 +80,7 @@ public interface IPRange<IP extends IPAddress<IP>> extends Collection<IP> {
     @Override
     @SuppressWarnings("unchecked")
     default boolean contains(Object o) {
-        return from().getClass().isInstance(o) && contains((IP) o);
+        return from().getClass().isInstance(o) && contains((I) o);
     }
 
     /**
@@ -93,7 +93,7 @@ public interface IPRange<IP extends IPAddress<IP>> extends Collection<IP> {
      * @return {@code true} if the given IP address is in this IP range, or {@code false} otherwise.
      * @see IPAddress#compareTo(Object)
      */
-    default boolean contains(IP ipAddress) {
+    default boolean contains(I ipAddress) {
         return ipAddress != null && from().compareTo(ipAddress) <= 0 && ipAddress.compareTo(to()) <= 0;
     }
 
@@ -105,9 +105,9 @@ public interface IPRange<IP extends IPAddress<IP>> extends Collection<IP> {
      * This implementation returns an iterator that starts at {@link #from()} and iterates up to and including {@link #to()}.
      */
     @Override
-    default Iterator<IP> iterator() {
-        return new Iterator<IP>() {
-            private IP current = from();
+    default Iterator<I> iterator() {
+        return new Iterator<I>() {
+            private I current = from();
 
             @Override
             public boolean hasNext() {
@@ -115,9 +115,9 @@ public interface IPRange<IP extends IPAddress<IP>> extends Collection<IP> {
             }
 
             @Override
-            public IP next() {
+            public I next() {
                 if (hasNext()) {
-                    IP next = current;
+                    I next = current;
                     current = current.hasNext() ? current.next() : null;
                     return next;
                 }
@@ -136,7 +136,7 @@ public interface IPRange<IP extends IPAddress<IP>> extends Collection<IP> {
         Object[] result = new Object[size()];
         int i = 0;
         // exclude to here, because to.next() will not be allowed if to is the maximum IP address for its type
-        for (IP ip = from(); ip.compareTo(to()) < 0; ip = ip.next()) {
+        for (I ip = from(); ip.compareTo(to()) < 0; ip = ip.next()) {
             result[i++] = ip;
         }
         result[i] = to();
@@ -159,7 +159,7 @@ public interface IPRange<IP extends IPAddress<IP>> extends Collection<IP> {
         Object[] result = a;
         int i = 0;
         // exclude to here, because to.next() will not be allowed if to is the maximum IP address for its type
-        for (IP ip = from(); ip.compareTo(to()) < 0; ip = ip.next()) {
+        for (I ip = from(); ip.compareTo(to()) < 0; ip = ip.next()) {
             result[i++] = ip;
         }
         result[i] = to();
@@ -176,7 +176,7 @@ public interface IPRange<IP extends IPAddress<IP>> extends Collection<IP> {
      * Throws an {@link UnsupportedOperationException}.
      */
     @Override
-    default boolean add(IP ipAddress) {
+    default boolean add(I ipAddress) {
         throw new UnsupportedOperationException();
     }
 
@@ -218,7 +218,7 @@ public interface IPRange<IP extends IPAddress<IP>> extends Collection<IP> {
      * Throws an {@link UnsupportedOperationException}.
      */
     @Override
-    default boolean addAll(Collection<? extends IP> c) {
+    default boolean addAll(Collection<? extends I> c) {
         throw new UnsupportedOperationException();
     }
 
@@ -234,7 +234,7 @@ public interface IPRange<IP extends IPAddress<IP>> extends Collection<IP> {
      * Throws an {@link UnsupportedOperationException}.
      */
     @Override
-    default boolean removeIf(Predicate<? super IP> filter) {
+    default boolean removeIf(Predicate<? super I> filter) {
         throw new UnsupportedOperationException();
     }
 
@@ -286,9 +286,9 @@ public interface IPRange<IP extends IPAddress<IP>> extends Collection<IP> {
      * This implementation iterates over all IP addresses from {@link #from()} to {@link #to()} inclusive, calling the given action for each one.
      */
     @Override
-    default void forEach(Consumer<? super IP> action) {
+    default void forEach(Consumer<? super I> action) {
         // exclude to here, because to.next() will not be allowed if to is the maximum IP address for its type
-        for (IP ip = from(); ip.compareTo(to()) < 0; ip = ip.next()) {
+        for (I ip = from(); ip.compareTo(to()) < 0; ip = ip.next()) {
             action.accept(ip);
         }
         action.accept(to());

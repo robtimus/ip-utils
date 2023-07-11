@@ -27,10 +27,10 @@ import java.text.ParsePosition;
  * Instances returned from the {@link IPAddressFormatter#asFormat() asFormat} method of an {@link IPAddressFormatter} are immutable.
  *
  * @author Rob Spoor
- * @param <IP> The supported type of IP address.
+ * @param <I> The supported type of IP address.
  * @since 1.2
  */
-public abstract class IPAddressFormat<IP extends IPAddress<?>> extends Format {
+public abstract class IPAddressFormat<I extends IPAddress<?>> extends Format {
 
     private static final long serialVersionUID = 3924951358401713342L;
 
@@ -57,14 +57,14 @@ public abstract class IPAddressFormat<IP extends IPAddress<?>> extends Format {
     }
 
     @Override
-    public IP parseObject(String source, ParsePosition position) {
+    public I parseObject(String source, ParsePosition position) {
         return parse(source, position);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public IP parseObject(String source) throws ParseException {
-        return (IP) super.parseObject(source);
+    public I parseObject(String source) throws ParseException {
+        return (I) super.parseObject(source);
     }
 
     /**
@@ -81,7 +81,7 @@ public abstract class IPAddressFormat<IP extends IPAddress<?>> extends Format {
      * @return The parsed IP address if parsing succeeded, or {@code null} if parsing fails.
      * @throws NullPointerException If the given {@code CharSequence} or {@code ParsePosition} is {@code null}.
      */
-    public IP parse(CharSequence source, ParsePosition position) {
+    public I parse(CharSequence source, ParsePosition position) {
         return formatter().parse(source, position);
     }
 
@@ -94,11 +94,11 @@ public abstract class IPAddressFormat<IP extends IPAddress<?>> extends Format {
      * @throws NullPointerException If the given {@code CharSequence} is {@code null}.
      * @throws ParseException If the {@code CharSequence} could not be parsed to an IP address.
      */
-    public IP parse(CharSequence source) throws ParseException {
+    public I parse(CharSequence source) throws ParseException {
         return formatter().parse(source);
     }
 
-    abstract IPAddressFormatter<IP> formatter();
+    abstract IPAddressFormatter<I> formatter();
 
     @Override
     public final boolean equals(Object o) {

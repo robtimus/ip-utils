@@ -69,7 +69,7 @@ class SingletonIPRangeTest {
     @ParameterizedTest(name = "{1}")
     @MethodSource
     @DisplayName("contains")
-    <IP extends IPAddress<IP>> void testContains(IPRange<IP> ipRange, IP address, boolean expected) {
+    <I extends IPAddress<I>> void testContains(IPRange<I> ipRange, I address, boolean expected) {
         assertEquals(expected, ipRange.contains(address));
         assertEquals(expected, ipRange.contains((Object) address));
     }

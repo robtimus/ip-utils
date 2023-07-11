@@ -25,25 +25,25 @@ import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
-abstract class SingletonIPRange<IP extends IPAddress<IP>> implements IPRange<IP> {
+abstract class SingletonIPRange<I extends IPAddress<I>> implements IPRange<I> {
 
-    private final IP ip;
+    private final I ip;
 
     private String stringValue;
 
-    SingletonIPRange(IP ip) {
+    SingletonIPRange(I ip) {
         this.ip = ip;
     }
 
     // Query Operations
 
     @Override
-    public IP from() {
+    public I from() {
         return ip;
     }
 
     @Override
-    public IP to() {
+    public I to() {
         return ip;
     }
 
@@ -58,13 +58,13 @@ abstract class SingletonIPRange<IP extends IPAddress<IP>> implements IPRange<IP>
     }
 
     @Override
-    public boolean contains(IP ipAddress) {
+    public boolean contains(I ipAddress) {
         return ip.equals(ipAddress);
     }
 
     @Override
-    public Iterator<IP> iterator() {
-        return new Iterator<IP>() {
+    public Iterator<I> iterator() {
+        return new Iterator<I>() {
             private boolean done = false;
 
             @Override
@@ -73,7 +73,7 @@ abstract class SingletonIPRange<IP extends IPAddress<IP>> implements IPRange<IP>
             }
 
             @Override
-            public IP next() {
+            public I next() {
                 if (done) {
                     throw new NoSuchElementException();
                 }
@@ -146,27 +146,27 @@ abstract class SingletonIPRange<IP extends IPAddress<IP>> implements IPRange<IP>
     // Stream / Iterable
 
     @Override
-    public void forEach(Consumer<? super IP> action) {
+    public void forEach(Consumer<? super I> action) {
         action.accept(ip);
     }
 
     @Override
-    public Spliterator<IP> spliterator() {
+    public Spliterator<I> spliterator() {
         return new SingletonSpliterator<>(ip);
     }
 
-    private static final class SingletonSpliterator<IP extends IPAddress<IP>> implements Spliterator<IP> {
+    private static final class SingletonSpliterator<I extends IPAddress<I>> implements Spliterator<I> {
 
-        private final IP ip;
+        private final I ip;
 
         private boolean done = false;
 
-        private SingletonSpliterator(IP ip) {
+        private SingletonSpliterator(I ip) {
             this.ip = ip;
         }
 
         @Override
-        public boolean tryAdvance(Consumer<? super IP> action) {
+        public boolean tryAdvance(Consumer<? super I> action) {
             if (done) {
                 return false;
             }
@@ -176,7 +176,7 @@ abstract class SingletonIPRange<IP extends IPAddress<IP>> implements IPRange<IP>
         }
 
         @Override
-        public void forEachRemaining(Consumer<? super IP> action) {
+        public void forEachRemaining(Consumer<? super I> action) {
             if (!done) {
                 done = true;
                 action.accept(ip);
@@ -184,7 +184,7 @@ abstract class SingletonIPRange<IP extends IPAddress<IP>> implements IPRange<IP>
         }
 
         @Override
-        public Spliterator<IP> trySplit() {
+        public Spliterator<I> trySplit() {
             return null;
         }
 
@@ -204,7 +204,7 @@ abstract class SingletonIPRange<IP extends IPAddress<IP>> implements IPRange<IP>
         }
 
         @Override
-        public Comparator<? super IP> getComparator() {
+        public Comparator<? super I> getComparator() {
             return null;
         }
     }

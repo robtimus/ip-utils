@@ -43,9 +43,9 @@ import java.util.function.Predicate;
  * Formatter for printing and parsing IP addresses. Instances returned from one of the factory methods or a {@link Builder} are immutable.
  *
  * @author Rob Spoor
- * @param <IP> The supported type of IP address.
+ * @param <I> The supported type of IP address.
  */
-public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
+public abstract class IPAddressFormatter<I extends IPAddress<?>> {
 
     private IPAddressFormatter() {
         super();
@@ -59,7 +59,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @return The given {@code StringBuilder}.
      * @throws NullPointerException If the given IP address or {@code StringBuilder} is {@code null}.
      */
-    public StringBuilder format(IP address, StringBuilder sb) {
+    public StringBuilder format(I address, StringBuilder sb) {
         return appendNoThrows(address, sb);
     }
 
@@ -72,7 +72,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @throws NullPointerException If the given IP address or {@code StringBuffer} is {@code null}.
      * @since 1.2
      */
-    public StringBuffer format(IP address, StringBuffer sb) {
+    public StringBuffer format(I address, StringBuffer sb) {
         return appendNoThrows(address, sb);
     }
 
@@ -83,7 +83,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @return The formatted IP address.
      * @throws NullPointerException If the given IP address is {@code null}.
      */
-    public abstract String format(IP address);
+    public abstract String format(I address);
 
     /**
      * Appends an IP address to an {@code Appendable}.
@@ -96,9 +96,9 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @throws IOException If an I/O error occurs while appending to the {@code Appendable}.
      * @since 1.1
      */
-    public abstract <A extends Appendable> A append(IP address, A dest) throws IOException;
+    public abstract <A extends Appendable> A append(I address, A dest) throws IOException;
 
-    private <A extends Appendable> A appendNoThrows(IP address, A dest) {
+    private <A extends Appendable> A appendNoThrows(I address, A dest) {
         try {
             return append(address, dest);
         } catch (IOException e) {
@@ -169,9 +169,9 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
 
     abstract StringBuffer format(Object object, StringBuffer dest);
 
-    abstract IP valueOf(CharSequence address, int start, int end);
+    abstract I valueOf(CharSequence address, int start, int end);
 
-    abstract IP valueOf(CharSequence address, int start, int end, Function<CharSequence, String> errorMessage);
+    abstract I valueOf(CharSequence address, int start, int end, Function<CharSequence, String> errorMessage);
 
     /**
      * Parses a {@code CharSequence} to an IP address.
@@ -181,7 +181,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @throws NullPointerException If the given {@code CharSequence} is {@code null}.
      * @throws ParseException If the {@code CharSequence} could not be parsed to an IP address.
      */
-    public IP parse(CharSequence source) throws ParseException {
+    public I parse(CharSequence source) throws ParseException {
         return parse(source, 0, source.length());
     }
 
@@ -198,9 +198,9 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @throws ParseException If the {@code CharSequence} could not be parsed to an IP address.
      * @since 1.1
      */
-    public abstract IP parse(CharSequence source, int start, int end) throws ParseException;
+    public abstract I parse(CharSequence source, int start, int end) throws ParseException;
 
-    abstract IP parse(CharSequence source, int start, int end, Function<CharSequence, String> errorMessage) throws ParseException;
+    abstract I parse(CharSequence source, int start, int end, Function<CharSequence, String> errorMessage) throws ParseException;
 
     /**
      * Attempts to parse a {@code CharSequence} to an IP address. Parsing starts at the current index of the given {@code ParsePosition}.
@@ -216,7 +216,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @return The parsed IP address if parsing succeeded, or {@code null} if parsing fails.
      * @throws NullPointerException If the given {@code CharSequence} or {@code ParsePosition} is {@code null}.
      */
-    public abstract IP parse(CharSequence source, ParsePosition position);
+    public abstract I parse(CharSequence source, ParsePosition position);
 
     /**
      * Attempts to parse a {@code CharSequence} to an IP address.
@@ -224,7 +224,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @param source The {@code CharSequence} to parse.
      * @return An {@code Optional} with the parsed IP address if parsing succeeded, or {@code Optional#empty()} if parsing fails.
      */
-    public Optional<IP> tryParse(CharSequence source) {
+    public Optional<I> tryParse(CharSequence source) {
         return source == null ? Optional.empty() : tryParse(source, 0, source.length());
     }
 
@@ -239,7 +239,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      *                                       or if the start index is larger than the end index (unless if the {@code CharSequence} is {@code null}).
      * @since 1.1
      */
-    public abstract Optional<IP> tryParse(CharSequence source, int start, int end);
+    public abstract Optional<I> tryParse(CharSequence source, int start, int end);
 
     /**
      * Parses a {@code CharSequence} to an IP address.
@@ -324,11 +324,11 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * @see #format(byte[], StringBuffer)
      * @since 1.2
      */
-    public abstract IPAddressFormat<IP> asFormat();
+    public abstract IPAddressFormat<I> asFormat();
 
     abstract boolean isValid(CharSequence source, int start, int end);
 
-    abstract boolean testIfValid(CharSequence source, Predicate<? super IP> predicate);
+    abstract boolean testIfValid(CharSequence source, Predicate<? super I> predicate);
 
     static void checkBounds(CharSequence s, int start, int end) {
         if (start < 0) {
@@ -399,18 +399,18 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
      * A builder for formatters for printing and parsing IP addresses.
      *
      * @author Rob Spoor
-     * @param <IP> The supported type of IP address for built formatters.
+     * @param <I> The supported type of IP address for built formatters.
      */
-    public static final class Builder<IP extends IPAddress<?>> {
+    public static final class Builder<I extends IPAddress<?>> {
 
-        private final Constructor<IP> constructor;
+        private final Constructor<I> constructor;
 
         private FormatStyle style = FormatStyle.SHORT;
         private boolean upperCase = false;
         private boolean withIPv4End = false;
         private boolean encloseInBrackets = false;
 
-        private Builder(Constructor<IP> constructor) {
+        private Builder(Constructor<I> constructor) {
             this.constructor = constructor;
         }
 
@@ -425,7 +425,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
          *
          * @return This builder object.
          */
-        public Builder<IP> withShortStyle() {
+        public Builder<I> withShortStyle() {
             style = FormatStyle.SHORT;
             return this;
         }
@@ -438,7 +438,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
          *
          * @return This builder object.
          */
-        public Builder<IP> withMediumStyle() {
+        public Builder<I> withMediumStyle() {
             style = FormatStyle.MEDIUM;
             return this;
         }
@@ -451,7 +451,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
          *
          * @return This builder object.
          */
-        public Builder<IP> withLongStyle() {
+        public Builder<I> withLongStyle() {
             style = FormatStyle.LONG;
             return this;
         }
@@ -462,7 +462,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
          *
          * @return This builder object.
          */
-        public Builder<IP> toUpperCase() {
+        public Builder<I> toUpperCase() {
             upperCase = true;
             return this;
         }
@@ -475,7 +475,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
          *
          * @return This builder object.
          */
-        public Builder<IP> toLowerCase() {
+        public Builder<I> toLowerCase() {
             upperCase = false;
             return this;
         }
@@ -488,7 +488,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
          *
          * @return This builder object.
          */
-        public Builder<IP> withIPv4End() {
+        public Builder<I> withIPv4End() {
             withIPv4End = true;
             return this;
         }
@@ -501,7 +501,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
          *
          * @return This builder object.
          */
-        public Builder<IP> withoutIPv4End() {
+        public Builder<I> withoutIPv4End() {
             withIPv4End = false;
             return this;
         }
@@ -514,7 +514,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
          *
          * @return This builder object.
          */
-        public Builder<IP> enclosingInBrackets() {
+        public Builder<I> enclosingInBrackets() {
             encloseInBrackets = true;
             return this;
         }
@@ -527,7 +527,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
          *
          * @return This builder object.
          */
-        public Builder<IP> notEnclosingInBrackets() {
+        public Builder<I> notEnclosingInBrackets() {
             encloseInBrackets = false;
             return this;
         }
@@ -538,7 +538,7 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
          *
          * @return This builder object.
          */
-        public Builder<IP> withDefaults() {
+        public Builder<I> withDefaults() {
             withShortStyle();
             toLowerCase();
             withoutIPv4End();
@@ -565,13 +565,13 @@ public abstract class IPAddressFormatter<IP extends IPAddress<?>> {
          *
          * @return A formatter for printing and parsing IP addresses with the current settings of this builder object.
          */
-        public IPAddressFormatter<IP> build() {
+        public IPAddressFormatter<I> build() {
             return constructor.create(style, upperCase, withIPv4End, encloseInBrackets);
         }
 
-        private interface Constructor<IP extends IPAddress<?>> {
+        private interface Constructor<I extends IPAddress<?>> {
 
-            IPAddressFormatter<IP> create(FormatStyle style, boolean upperCase, boolean withIPv4End, boolean encloseInBrackets);
+            IPAddressFormatter<I> create(FormatStyle style, boolean upperCase, boolean withIPv4End, boolean encloseInBrackets);
         }
     }
 

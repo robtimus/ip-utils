@@ -24,29 +24,29 @@ import java.util.Optional;
  * Represents a subnet of IP addresses. Immutable.
  *
  * @author Rob Spoor
- * @param <IP> The type of IP address in the subnet.
+ * @param <I> The type of IP address in the subnet.
  */
-public abstract class Subnet<IP extends IPAddress<IP>> extends AbstractIPRange<IP> {
+public abstract class Subnet<I extends IPAddress<I>> extends AbstractIPRange<I> {
 
-    private final IP from;
-    private final IP to;
+    private final I from;
+    private final I to;
     private final int prefixLength;
 
     private String stringValue;
 
-    Subnet(IP from, IP to, int prefixLength) {
+    Subnet(I from, I to, int prefixLength) {
         this.from = from;
         this.to = to;
         this.prefixLength = prefixLength;
     }
 
     @Override
-    public final IP from() {
+    public final I from() {
         return from;
     }
 
     @Override
-    public final IP to() {
+    public final I to() {
         return to;
     }
 
@@ -55,7 +55,7 @@ public abstract class Subnet<IP extends IPAddress<IP>> extends AbstractIPRange<I
      *
      * @return The routing prefix of this subnet.
      */
-    public final IP routingPrefix() {
+    public final I routingPrefix() {
         return from();
     }
 

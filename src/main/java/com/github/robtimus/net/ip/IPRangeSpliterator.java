@@ -25,9 +25,9 @@ import java.util.function.Consumer;
  * A spliterator for IP ranges.
  *
  * @author Rob Spoor
- * @param <IP> The supported type of IP address.
+ * @param <I> The supported type of IP address.
  */
-public abstract class IPRangeSpliterator<IP extends IPAddress<IP>> implements Spliterator<IP> {
+public abstract class IPRangeSpliterator<I extends IPAddress<I>> implements Spliterator<I> {
 
     /**
      * A bit mask with the minimal characteristics that should be returned from {@link #characteristics()}:
@@ -36,16 +36,16 @@ public abstract class IPRangeSpliterator<IP extends IPAddress<IP>> implements Sp
      */
     protected static final int MINIMAL_CHARACTERISTICS = ORDERED | DISTINCT | SORTED | NONNULL | IMMUTABLE;
 
-    final IP to;
-    IP current;
+    final I to;
+    I current;
 
-    IPRangeSpliterator(IP from, IP to) {
+    IPRangeSpliterator(I from, I to) {
         this.to = to;
         this.current = from;
     }
 
     @Override
-    public boolean tryAdvance(Consumer<? super IP> action) {
+    public boolean tryAdvance(Consumer<? super I> action) {
         if (current != null && current.compareTo(to) <= 0) {
             action.accept(current);
             current = current.hasNext() ? current.next() : null;
@@ -55,7 +55,7 @@ public abstract class IPRangeSpliterator<IP extends IPAddress<IP>> implements Sp
     }
 
     @Override
-    public Comparator<? super IP> getComparator() {
+    public Comparator<? super I> getComparator() {
         return null;
     }
 }

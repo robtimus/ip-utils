@@ -70,7 +70,7 @@ class IPRangeTest {
         };
     }
 
-    private <IP extends IPAddress<IP>> DynamicTest testContains(IPRange<IP> ipRange, IP address, boolean expected) {
+    private <I extends IPAddress<I>> DynamicTest testContains(IPRange<I> ipRange, I address, boolean expected) {
         return dynamicTest(String.valueOf(address), () -> {
             assertEquals(expected, ipRange.contains(address));
             assertEquals(expected, ipRange.contains((Object) address));
@@ -180,7 +180,7 @@ class IPRangeTest {
     @ParameterizedTest(name = "{1}")
     @MethodSource
     @DisplayName("containsAll")
-    <IP extends IPAddress<IP>> void testContainsAll(IPRange<IP> ipRange, Collection<?> c, boolean expected) {
+    <I extends IPAddress<I>> void testContainsAll(IPRange<I> ipRange, Collection<?> c, boolean expected) {
         assertEquals(expected, ipRange.containsAll(c));
     }
 
