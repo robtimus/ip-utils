@@ -242,7 +242,7 @@ class IPRangeTest {
     void testClear() {
         IPv4Address address = IPv4Address.LOCALHOST;
         IPRange<IPv4Address> ipRange = new TestRange(address);
-        assertThrows(UnsupportedOperationException.class, () -> ipRange.clear());
+        assertThrows(UnsupportedOperationException.class, ipRange::clear);
     }
 
     @TestFactory

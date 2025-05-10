@@ -95,7 +95,7 @@ class SingletonIPRangeTest {
         assertTrue(iterator.hasNext());
         assertSame(address, iterator.next());
         assertFalse(iterator.hasNext());
-        assertThrows(NoSuchElementException.class, () -> iterator.next());
+        assertThrows(NoSuchElementException.class, iterator::next);
     }
 
     @TestFactory

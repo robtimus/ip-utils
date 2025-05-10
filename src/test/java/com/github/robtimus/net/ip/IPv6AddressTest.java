@@ -122,7 +122,7 @@ class IPv6AddressTest {
 
     private DynamicTest testToIPv4NotMapped(IPv6Address address) {
         return dynamicTest(address.toString(), () -> {
-            IllegalStateException exception = assertThrows(IllegalStateException.class, () -> address.toIPv4());
+            IllegalStateException exception = assertThrows(IllegalStateException.class, address::toIPv4);
             assertEquals(Messages.IPv6Address.notIPv4Mapped(address), exception.getMessage());
         });
     }
