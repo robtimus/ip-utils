@@ -123,7 +123,7 @@ public abstract class IPAddressFormat<I extends IPAddress<?>> extends Format {
      * @deprecated {@code IPAddressFormat} instances are immutable, and should not be cloned.
      */
     @Override
-    @Deprecated
+    @Deprecated(since = "1.2", forRemoval = false)
     public Object clone() {
         return super.clone();
     }
