@@ -64,7 +64,7 @@ abstract class SingletonIPRange<I extends IPAddress<I>> implements IPRange<I> {
 
     @Override
     public Iterator<I> iterator() {
-        return new Iterator<I>() {
+        return new Iterator<>() {
             private boolean done = false;
 
             @Override

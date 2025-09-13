@@ -22,12 +22,12 @@
   <parent>
     <groupId>com.github.robtimus</groupId>
     <artifactId>robtimus-parent</artifactId>
-    <version>1.18</version>
+    <version>2.0</version>
     <relativePath />
   </parent>
 
   <artifactId>ip-utils</artifactId>
-  <version>1.4-SNAPSHOT</version>
+  <version>2.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>ip-utils</name>
@@ -62,6 +62,8 @@
   </issueManagement>
 
   <properties>
+    <version.java>11</version.java>
+
     <version.try-parse>1.1.1</version.try-parse>
   </properties>
 
@@ -113,6 +115,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>properties</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>
@@ -162,11 +171,6 @@
       </plugin>
 
       <plugin>
-        <groupId>org.moditect</groupId>
-        <artifactId>moditect-maven-plugin</artifactId>
-      </plugin>
-
-      <plugin>
         <groupId>com.github.robtimus</groupId>
         <artifactId>build-helper-maven-plugin</artifactId>
       </plugin>
@@ -190,6 +194,14 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>
+            @{argLine}
+            -javaagent:${org.mockito:mockito-core:jar}
+            <!-- Allow JUnit to fully access the test classes -->
+            --add-opens com.github.robtimus.ip.utils/com.github.robtimus.net.ip=ALL-UNNAMED
+          </argLine>
+        </configuration>
       </plugin>
 
       <plugin>
@@ -228,54 +240,4 @@
       </plugin>
     </plugins>
   </build>
-
-  <profiles>
-    <profile>
-      <id>native-module</id>
-      <properties>
-        <version.java>11</version.java>
-      </properties>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <!-- Allow JUnit to fully access the test classes -->
-              <argLine>
-                @{argLine}
-                --add-opens com.github.robtimus.ip.utils/com.github.robtimus.net.ip=ALL-UNNAMED
-              </argLine>
-            </configuration>
-          </plugin>
-
-          <plugin>
-            <groupId>org.moditect</groupId>
-            <artifactId>moditect-maven-plugin</artifactId>
-            <configuration>
-              <skip>true</skip>
-            </configuration>
-          </plugin>
-
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <phase>generate-sources</phase>
-                <goals>
-                  <goal>add-source</goal>
-                </goals>
-                <configuration>
-                  <sources>
-                    <source>${project.basedir}/src/moditect</source>
-                  </sources>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>

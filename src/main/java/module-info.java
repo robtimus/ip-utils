@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+/**
+ * A set of utility classes for working with IP addresses
+ */
 module com.github.robtimus.ip.utils {
     requires com.github.robtimus.tryparse;
 

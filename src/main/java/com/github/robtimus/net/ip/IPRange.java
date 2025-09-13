@@ -106,7 +106,7 @@ public interface IPRange<I extends IPAddress<I>> extends Collection<I> {
      */
     @Override
     default Iterator<I> iterator() {
-        return new Iterator<I>() {
+        return new Iterator<>() {
             private I current = from();
 
             @Override

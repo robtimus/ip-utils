@@ -36,7 +36,7 @@ class SubnetTest {
         IPv4Address from = IPv4Address.valueOf(192, 168, 0, 0);
         IPv4Address to = IPv4Address.valueOf(192, 168, 255, 255);
         int prefixLength = 16;
-        Subnet<?> subnet = new Subnet<IPv4Address>(from, to, prefixLength) {
+        Subnet<?> subnet = new Subnet<>(from, to, prefixLength) {
             @Override
             public int size() {
                 return 0;
@@ -52,7 +52,7 @@ class SubnetTest {
         IPv4Address from = IPv4Address.valueOf(192, 168, 0, 0);
         IPv4Address to = IPv4Address.valueOf(192, 168, 255, 255);
         int prefixLength = 16;
-        Subnet<?> subnet = new Subnet<IPv4Address>(from, to, prefixLength) {
+        Subnet<?> subnet = new Subnet<>(from, to, prefixLength) {
             @Override
             public int size() {
                 return 0;
